@@ -21,7 +21,7 @@ valita menunäkymä ja mitä tietoja hakee. Role on myös enkoodattu tokeniin, n
   
 ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email ja salasana).  
 Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
-Emailit aina uniikkeja.  
+Emailit aina uniikkeja ja toimii käyttäjänimen sijaan myös.  
 
 Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.  
 Käytetty Lombok-kirjastoa kontstruktoreiden, getterien ja setterien generointiin  
