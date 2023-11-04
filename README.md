@@ -53,6 +53,7 @@ ReportedHours, joilla manytoone suhde Users. TODO
 
 ### Package: com.backend.server.security
 - SecurityService
+- SecurityRestController !!  
 - Encoder
 - RefreshToken
 - RefreshTokenRepository
