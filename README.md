@@ -16,6 +16,8 @@ Kolme roolitasoa users: WORKER, SUPERVISOR, MASTER.
 Tarkoitus että Worker näkee ja editoi vain omat tietonsa.  
 Supervisor voi antaa vuoroja ja nähdä muiden tietoja.  
 Master em. lisäksi lisätä approved emails.  
+Login palauttaa LoginResponse olion, jossa mukana role. Role perusteella frontin täytyy  
+valita menunäkymä ja mitä tietoja hakee.  
   
 ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email ja salasana).  
 Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
