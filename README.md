@@ -17,13 +17,13 @@ Tarkoitus että Worker näkee ja editoi vain omat tietonsa.
 Supervisor voi antaa vuoroja ja nähdä muiden tietoja.  
 Master em. lisäksi lisätä approved emails.  
 Login palauttaa LoginResponse olion, jossa mukana role. Role perusteella frontin täytyy  
-valita menunäkymä ja mitä tietoja hakee.  
+valita menunäkymä ja mitä tietoja hakee. Role on myös enkoodattu tokeniin, niin väärää tietoa ei tule.  
   
 ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email ja salasana).  
 Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
-Emailit aina uniikkeja.  
+Emailit aina uniikkeja ja toimii käyttäjänimen sijasta, ei erillistä käyttäjänimeä.  
 
-Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.
+Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.  
 Käytetty Lombok-kirjastoa kontstruktoreiden, getterien ja setterien generointiin  
 jotta koodi pysyy luettavampana.  
   
@@ -34,6 +34,9 @@ Users, jolla manytoone suhde Company, ja TODO merkattu shifts ja työaikaraporti
 Shifts, joilla manytoone suhde Users. TODO  
 ReportedHours, joilla manytoone suhde Users. TODO  
 
+RestControllereissa huomioitava että securityn String funktiot ei palauta NULL epäonnistuessa,  
+vaan IllegalArgumentException. Restissä täytyy käyttää "catch IllegalArgumentException e"  
+kun pitää saada kiinni loginin epäonnistumisesta.    
 
 
 # Servers planned structure
@@ -62,8 +65,8 @@ ReportedHours, joilla manytoone suhde Users. TODO
 
 ### Package: com.backend.server.utility
 - Role
-- Auditable
-- AuditableReports
+- Auditable 'aikaleimaa varten, ei sisällä last_modified_by'  
+- AuditableReports 'aikaleimaa varten, sisältää last_modified_by'  
 - LoginResponse
 - JsonConverter
 
