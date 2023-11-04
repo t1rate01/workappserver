@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.backend.server.companies.CompanyRepository;
+// import com.backend.server.companies.CompanyRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityService {
     private final UserRepository userRepository;
-    private final CompanyRepository companyRepository;
+    // private final CompanyRepository companyRepository;   // tarviikohan?
     private final CompAppEmailsRepository companyApprovedEmailsRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final Encoder encoder;
