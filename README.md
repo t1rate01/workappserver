@@ -65,8 +65,8 @@ kun pitää saada kiinni loginin epäonnistumisesta.
 
 ### Package: com.backend.server.utility
 - Role
-- Auditable
-- AuditableReports
+- Auditable 'aikaleimaa varten, ei sisällä last_modified_by'  
+- AuditableReports 'aikaleimaa varten, sisältää last_modified_by'  
 - LoginResponse
 - JsonConverter
 
