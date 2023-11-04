@@ -34,6 +34,9 @@ Users, jolla manytoone suhde Company, ja TODO merkattu shifts ja työaikaraporti
 Shifts, joilla manytoone suhde Users. TODO  
 ReportedHours, joilla manytoone suhde Users. TODO  
 
+RestControllereissa huomioitava että securityn String funktiot ei palauta NULL epäonnistuessa,  
+vaan IllegalArgumentException. Restissä täytyy käyttää "catch IllegalArgumentException e"  
+kun pitää saada kiinni loginin epäonnistumisesta.    
 
 
 # Servers planned structure
