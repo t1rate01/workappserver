@@ -17,7 +17,7 @@ Tarkoitus että Worker näkee ja editoi vain omat tietonsa.
 Supervisor voi antaa vuoroja ja nähdä muiden tietoja.  
 Master em. lisäksi lisätä approved emails.  
 Login palauttaa LoginResponse olion, jossa mukana role. Role perusteella frontin täytyy  
-valita menunäkymä ja mitä tietoja hakee.  
+valita menunäkymä ja mitä tietoja hakee. Role on myös enkoodattu tokeniin, niin väärää tietoa ei tule.  
   
 ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email ja salasana).  
 Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
