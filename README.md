@@ -27,7 +27,7 @@ jotta koodi pysyy luettavampana.
   
 
 Database MySQL, logiikka:  
-Company, jossa onetomany suhde Users ja CompanyApprovedEmails 
+Company, jossa onetomany suhde Users ja CompanyApprovedEmails  
 Users, jolla manytoone suhde Company, ja TODO merkattu shifts ja työaikaraportit  
 Shifts, joilla manytoone suhde Users. TODO  
 ReportedHours, joilla manytoone suhde Users. TODO  
@@ -53,6 +53,7 @@ ReportedHours, joilla manytoone suhde Users. TODO
 
 ### Package: com.backend.server.security
 - SecurityService
+- SecurityRestController !!  
 - Encoder
 - RefreshToken
 - RefreshTokenRepository
