@@ -146,7 +146,7 @@ public class SecurityService {
                 // vertaa tietokantatokeniin
                 Optional<RefreshToken> storedRefreshToken = refreshTokenRepository.findByToken(refreshToken);
                 if(storedRefreshToken.isPresent() && storedRefreshToken.get().getUser().equals(user)){
-                    // jos ok, uusi token
+                    // jos tallennettu token löytyi ja löydetty user täsmää pyynnössä tulleen tokenin useriin ok, uusi token
                     String newAccessToken = createAccessToken(user.getEmail(), user.getRole());
                     return newAccessToken;
                 } else {
