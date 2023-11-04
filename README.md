@@ -23,7 +23,7 @@ ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email
 Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
 Emailit aina uniikkeja.  
 
-Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.
+Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.  
 Käytetty Lombok-kirjastoa kontstruktoreiden, getterien ja setterien generointiin  
 jotta koodi pysyy luettavampana.  
   
