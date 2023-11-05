@@ -77,13 +77,12 @@ public class WorkDayRestController {
     @GetMapping("/personal")
     public ResponseEntity<?> getUserShifts(@RequestHeader("Authorization") String token) {
     try {
-        // Verify token and extract user
+        // Tarkistus
         User user = securityService.getUserFromToken(token);
 
-        // Call service to get the latest 31 shifts for the user
-        List<WorkDay> userShifts = workDayService.getUserShifts(user, 31);
+        // Kutsu overloaded funkiota joka palauttaa viimeiset 31 entryä
+        List<WorkDay> userShifts = workDayService.getUserShifts(user);
 
-        // Convert the entities to DTOs if needed and return
         return ResponseEntity.ok(userShifts);
     } catch (IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
