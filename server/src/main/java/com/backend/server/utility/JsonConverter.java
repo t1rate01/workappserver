@@ -1,4 +1,4 @@
-package com.backend.server.utility;
+/*package com.backend.server.utility;
 
 
 
@@ -39,3 +39,9 @@ public class JsonConverter implements AttributeConverter<Map<String, Object>, St
     }
     
 }
+*/
+
+
+// TURHA, Tehty aluksi mysql tietokantaa varten, mutta cloud hostia valitessa päädyin
+// vaihtamaan postgresql tietokantaan tarjonnan vuoksi.
+// postgresql tukee JSON tietotyyppiä, joten tästä convertterista tuli turha, jätin kuitenkin kokemuksena tänne.

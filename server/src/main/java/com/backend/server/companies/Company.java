@@ -5,13 +5,13 @@ package com.backend.server.companies;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.annotations.Type;
+
 import com.backend.server.users.User;
 import com.backend.server.utility.Auditable;
-import com.backend.server.utility.JsonConverter;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,9 +39,15 @@ public class Company extends Auditable {
 
     @Column(name = "company_name", nullable = false, unique = true)
     private String companyName;
-
+/* 
     @Column(name = "settings_json", nullable = true)
     @Convert(converter = JsonConverter.class)  // see /utility/JsonConverter.java
+    private Map<String, Object> settings;
+    // tästä tuli turha setti, kun vaihdettiin postgresql tietokantaan joka tukee JSON tietotyyppiä
+*/
+    // edellisen tilalle: (vaati uudemman hibernate version päivityksen pom.xmlään, defaultti joka buildissa tuli ei riittänyt)
+    @Type(type = "jsonb")
+    @Column(name = "settings_json", columnDefinition = "jsonb", nullable = true)
     private Map<String, Object> settings;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)  // db logiikkaa, jotta company ja sen työntekijät ja heidän tiedot liikkuu oikeille henkilöille
