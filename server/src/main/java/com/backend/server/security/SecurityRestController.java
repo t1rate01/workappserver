@@ -48,6 +48,7 @@ public class SecurityRestController {
         return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
         // Jos tarvitsee debugata jotain muuta niin 500
+        // TODO: email rekisteröity jo
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
     }
 }
