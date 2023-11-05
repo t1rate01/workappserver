@@ -7,6 +7,9 @@ sitoo tahdotulla tavalla rekisteröitäessä oikeaan companyyn työntekijän.
 - Testattu virheellisiä tilanteita, esim sähköposti ei approved listalla rekisteröintiyritys (servun vastaus tosi siisti)  
 testattu väärällä käyttäjätunnuksella ja/tai salasanalla login, vastaus aina 400 unauthrorized ja NULL sisältöä.  
 
+## SERVER LIVE URL  
+https://workhoursapp-9a5bdf993d73.herokuapp.com/
+
 # Ohjeita 
 - Tietokannassa on TestCompany ja TestCompany2, ja approved email niihin sidottuna test@test.com, test2@test.com  
 jotka molemmat rekisteröity.  
