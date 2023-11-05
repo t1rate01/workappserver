@@ -5,9 +5,8 @@ package com.backend.server.companies;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.annotations.JdbcType;
+
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import com.backend.server.users.User;
