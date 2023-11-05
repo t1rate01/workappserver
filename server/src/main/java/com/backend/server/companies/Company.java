@@ -5,10 +5,14 @@ package com.backend.server.companies;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import com.backend.server.users.User;
 import com.backend.server.utility.Auditable;
+
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -46,7 +50,7 @@ public class Company extends Auditable {
     // tästä tuli turha setti, kun vaihdettiin postgresql tietokantaan joka tukee JSON tietotyyppiä
 */
     // edellisen tilalle: (vaati uudemman hibernate version päivityksen pom.xmlään, defaultti joka buildissa tuli ei riittänyt)
-    @Type(type = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "settings_json", columnDefinition = "jsonb", nullable = true)
     private Map<String, Object> settings;
 
