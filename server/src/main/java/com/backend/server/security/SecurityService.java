@@ -1,5 +1,6 @@
 package com.backend.server.security;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -100,11 +101,13 @@ public class SecurityService {
             if(encoder.matches(password, user.getPassword())) {
                 String token = createAccessToken(user.getEmail(), user.getRole());
                 String refreshToken = createRefreshToken(user.getEmail(), user.getRole());
-                saveRefreshToken(user, refreshToken);
+                saveRefreshToken(user, refreshToken);  // refresh token tietokantaan
                 LoginResponse response = new LoginResponse();
                 response.setToken(token);
                 response.setRole(user.getRole());
                 response.setRefreshToken(refreshToken);
+                response.setCompanyname(user.getCompany().getCompanyName());
+                response.setCompanySettings(user.getCompany().getSettings());
                 return response;
             }
             else {
@@ -143,8 +146,10 @@ public class SecurityService {
         RefreshToken token = new RefreshToken();
         token.setToken(refreshToken);
         token.setUser(user);
+        token.setExpiryDate(Instant.now().plusMillis(refreshTokenExpirationTime));  // Set expiry date
         refreshTokenRepository.save(token);
     }
+
 
     public String refreshAccessToken(String refreshToken){
         try {

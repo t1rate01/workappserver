@@ -3,12 +3,13 @@
 
 
 
-Toteutuksia:  
+Toteutuksia ja mietteitä:  
 
 Loginissa saadaan 2 tokenia, 1 lyhyt ja 1 pitkäkestonen, lyhytkestosella pääsee toimintoihin.  
 Pitkäkestonen tallennetaan laitteelle ja tietokantaan, ja jos frontilla epäonnistuu login lyhyellä  
 tokenilla (on vanhentunut), frontti saa 401 vastauksen, jolloin frontin täytyy yrittää refreshata  
-token lähettämällä pitkäkestonen token, jonka servu autentikoi ja onnistuessa lähettää uuden tokenin.  
+token lähettämällä pitkäkestonen token, jonka servu autentikoi ja onnistuessa lähettää uuden tokenin. 
+Vaihtoehtoisesti frontin vois apin avatessa aina laittaa refresh token.   
 Ei tarvitse laittaa kirjautumaan uudestaan eikä tarvitse pitää pitkäikäistä accesstokenia.  
 Tähän jäi miettimättä isommin että mitä jos "Stay logged in" oliskin vaihtoehto...
   
@@ -28,61 +29,15 @@ Käytetty Lombok-kirjastoa kontstruktoreiden, getterien ja setterien generointii
 jotta koodi pysyy luettavampana.  
   
 
-Database MySQL, logiikka:  
+Database ~~MySQL~~ PostGreSQL, logiikka:  
 Company, jossa onetomany suhde Users ja CompanyApprovedEmails  
 Users, jolla manytoone suhde Company, ja TODO merkattu shifts ja työaikaraportit  
 Shifts, joilla manytoone suhde Users. TODO  
 ReportedHours, joilla manytoone suhde Users. TODO  
 
-RestControllereissa huomioitava että securityn String funktiot ei palauta NULL epäonnistuessa,  
+RestControllereissa huomioitava että securityn funktiot ei palauta NULL epäonnistuessa,  
 vaan IllegalArgumentException. Restissä täytyy käyttää "catch IllegalArgumentException e"  
 kun pitää saada kiinni loginin epäonnistumisesta.    
-
-
-# Servers planned structure
-
-## Packages and Classes
-
-### Package: com.backend.server.users
-- User
-- UserRepository
-
-
-### Package: com.backend.server.companies
-- Company
-- CompanyRepository
-- CompanyService
-- CompanyRestController !!
-- CompanyApprovedEmails
-- CompAppEmailsRepository
-
-### Package: com.backend.server.security
-- SecurityService
-- SecurityRestController !!  
-- Encoder
-- RefreshToken
-- RefreshTokenRepository
-
-### Package: com.backend.server.utility
-- Role
-- Auditable 'aikaleimaa varten, ei sisällä last_modified_by'  
-- AuditableReports 'aikaleimaa varten, sisältää last_modified_by'  
-- LoginResponse
-- JsonConverter
-
-
-### Package: com.backend.server.shifts !!
-- 
-- 
-
-### Package: com.backend.server.reportedhours !!  
-- 
--  
-  
-  
-### Package: com.backend.server.devices !! (tarpeellisuus?)
-- Mietinnässä, koska refreshtoken toteutus pitäisi mahdollistaa useilla eri laitteilla kirjautumisen halutessa ns "Stay logged in" tilassa
-- 
 
 
 

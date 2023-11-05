@@ -48,5 +48,8 @@ public class WorkDay {
     @Column(nullable=false, name = "is_holiday", columnDefinition = "boolean default false")
     private Boolean isHoliday;
 
+    @Column(nullable=true)   // koko rajataan DTO:ssa
+    private String description;
+
 
 }
