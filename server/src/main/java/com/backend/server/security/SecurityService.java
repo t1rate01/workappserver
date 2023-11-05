@@ -20,6 +20,7 @@ import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
 import com.backend.server.utility.Role;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -37,10 +38,19 @@ public class SecurityService {
     private String jwtKey;
 
     @Value("${jwt.refreshToken.expirationTime}")
-    private Long refreshTokenExpirationTime;
+    private String refreshTokenExpirationTimeString;
 
     @Value("${jwt.accessToken.expirationTime}")
+    private String accessTokenExpirationTimeString;
+
+    private Long refreshTokenExpirationTime;
     private Long accessTokenExpirationTime;
+
+    @PostConstruct   // ajat on app propertiesissa ja tulee stringinä, täytyy kääntää jotta toimii token funktioissa
+    public void init() {
+        refreshTokenExpirationTime = Long.parseLong(refreshTokenExpirationTimeString);
+        accessTokenExpirationTime = Long.parseLong(accessTokenExpirationTimeString);
+    }
 
     @Transactional  // overload koska puhelinnumero ei ole pakollinen
     public User register(String email, String password, String firstname, String lastname) {
