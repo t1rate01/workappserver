@@ -70,6 +70,15 @@ public class SecurityService {
             throw new IllegalArgumentException("Email is not on any approved list");
         }
 
+        // tarkista jos käyttäjällä on jo tili
+        if(userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        // hae rooli
+        Role role = companyApprovedEmailsRepository.findByEmail(email).get().getRole();
+
+
         // hae company jolla sähköposti on listoilla
         CompanyApprovedEmails approvedEmail = companyApprovedEmailsRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Email is not on any approved list"));
@@ -84,7 +93,7 @@ public class SecurityService {
         user.setPassword(encodedPassword);
         user.setFirstName(firstname);
         user.setLastName(lastname);
-        user.setRole(Role.WORKER);
+        user.setRole(role);  // asetetaan emailista haettu rooli
         if (phoneNumber != null) {
             user.setPhoneNumber(phoneNumber);
         }

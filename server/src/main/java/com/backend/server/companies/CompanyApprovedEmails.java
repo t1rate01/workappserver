@@ -1,7 +1,12 @@
 package com.backend.server.companies;
 
+
+
+import com.backend.server.utility.Role;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,5 +42,10 @@ public class CompanyApprovedEmails {
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
+
+    @Enumerated  // annetaan rooli jo tässä vaiheessa, jotta mm. ensimmäisen käyttäjän voi heti määrittää masteriksi
+    @Column(name = "role", nullable = false)
+    private Role role;
+
 
 }

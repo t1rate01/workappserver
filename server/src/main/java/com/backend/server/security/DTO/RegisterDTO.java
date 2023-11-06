@@ -31,8 +31,8 @@ public class RegisterDTO {  // Käytetään data transfer object validointeja va
     private String lastName;
     private String phoneNumber;
 
-    // role aina alussa WORKER
-    private Role role = Role.WORKER;
+    // role tulee preapproved emailista, mutta sen voi muuttaa.
+    private Role role;
 
     // company tulee toisella functiolla ennen tallennusta Usereihin
     

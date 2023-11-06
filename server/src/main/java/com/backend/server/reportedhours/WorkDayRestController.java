@@ -34,7 +34,8 @@ public class WorkDayRestController {
     public ResponseEntity<?> addShift(@Valid @RequestBody WorkDayDTO workDayDTO,
                                       @RequestHeader("Authorization") String token) {
         try {
-            // Käyttäjätarkistus
+            // Käyttäjätarkistus, luomalla Userin, jos luonti epäonnistuu heittää IllegalArgumentExceptionin
+            // herjaa keltaista "turhaan"
             User user = securityService.getUserFromToken(token);
 
             // Lisää vuoro
