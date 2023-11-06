@@ -11,8 +11,8 @@ testattu väärällä käyttäjätunnuksella ja/tai salasanalla login, vastaus a
 https://workhoursapp-9a5bdf993d73.herokuapp.com/
 
 # Ohjeita 
-- Tietokannassa on TestCompany ja TestCompany2, ja approved email niihin sidottuna test@test.com, test2@test.com  
-jotka molemmat rekisteröity.  
+- Tietokannassa on *Etunimesi*Company, ja approved email niihin sidottuna *etunimesi*@test.com, 
+joilla voi rekisteröityä ja nähdä sen linkittyvän oikeaan companyyn. 
 
 ### Rekisteröinti
 Komento jolla helppo lisätä consolista oma testifirma ja sille approved email  
