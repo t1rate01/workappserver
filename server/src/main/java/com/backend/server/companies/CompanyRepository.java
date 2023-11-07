@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
 
-    // Tuskin tarvitsee mitään, kaikki muut luokat sidotaan companyyn
+    // etsi companyname perusteella
+    Company findByCompanyName(String companyName);
     
 }

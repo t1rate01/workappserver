@@ -26,9 +26,10 @@ SELECT id FROM companies WHERE company_name = 'YourCompanyName';
 ```
 Ja lisää tällä ID:llä uusi sähköposti hyväksytylle listalle  
 ```sql
-INSERT INTO approved_emails (company_id, email) 
-VALUES (YourCompanyId, 'test@test.com');
+INSERT INTO approved_emails (company_id, email, role) 
+VALUES (YourCompanyId, 'test@test.com', 'WORKER');
 ```
+Roolit: "WORKER","SUPERVISOR","MASTER"
 Nyt voit käyttää /api/register rekisteröidäksesi uuden käyttäjän. Endpoint odottaa JSON bodyä tässä muodossa :
 ```json
 {

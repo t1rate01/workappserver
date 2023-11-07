@@ -16,6 +16,4 @@ public abstract class AuditableReports extends Auditable {
     @Column(name = "last_modified_by", nullable = false, updatable = true)
     private String lastModifiedBy;
     
-
-
 }

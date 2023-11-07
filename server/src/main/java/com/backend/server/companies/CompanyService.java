@@ -1,6 +1,8 @@
 package com.backend.server.companies;
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,13 @@ public class CompanyService {
         return "Company removed !! " + id;
     }
 
+    public Company getCompanyByCompanyName(String companyName) {
+        return companyRepository.findByCompanyName(companyName);
+    }
+
+    public List<Company> getCompanies() {
+        return companyRepository.findAll();
+    }
    
 
     // Lisää jos tarvii, esim update

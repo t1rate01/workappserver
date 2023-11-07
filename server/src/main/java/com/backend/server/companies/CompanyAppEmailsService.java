@@ -1,5 +1,7 @@
 package com.backend.server.companies;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -22,4 +24,7 @@ public class CompanyAppEmailsService {
         return "Company Approved Emails removed !! " + id;
     }
     
+    public List<CompanyApprovedEmails> getCompanyApprovedEmails() {
+        return compAppEmailsRepository.findAll();
+    }
 }

@@ -32,6 +32,7 @@ public class SecurityRestController {
     private final UserRepository userRepository;
     private final HolidayChecker holidayChecker;
     private final WorkDayRepository workDayRepository;
+    private final AdminRepository adminRepository;
 
 
     @PostMapping("/register")
@@ -52,6 +53,28 @@ public class SecurityRestController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
     }
 }
+
+    @PostMapping("register/admin")
+     public ResponseEntity<?> registerAdmin(@Valid @RequestBody String email, String password){
+    try {
+
+        Admin registeredAdmin = securityService.registerAdmin(email, password);
+        //User registeredUser = securityService.register(registerDTO.getEmail(), registerDTO.getPassword(), registerDTO.getFirstName(), registerDTO.getLastName(), registerDTO.getPhoneNumber());
+        if (registeredAdmin != null) {
+            return ResponseEntity.ok("User created successfully");
+        } else {
+            return ResponseEntity.badRequest().body("User creation failed");
+        }
+    } catch (IllegalArgumentException e) {
+        // Catch argumentexceptionille
+        return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        // Jos tarvitsee debugata jotain muuta niin 500
+        // TODO: email rekisteröity jo
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+    }
+}
+
 
 
     @PostMapping("/login")
@@ -86,6 +109,9 @@ public class SecurityRestController {
 
     @PostMapping("/refresh")  // frontti koodattava reagoimaan accesstokenin vanhenemiseen niin että yrittää tähän endpointiin refreshtokenilla ja saada uuden tokenin
     public ResponseEntity<String> refresh(@Valid @RequestHeader("Authorization") String refreshToken) {
+        if (refreshToken.startsWith("Bearer ")) {  // poistetaan Bearer alku tokenhakuja varten
+            refreshToken = refreshToken.substring(7);
+        }
         try {
             String newAccessToken = securityService.refreshAccessToken(refreshToken);
             return ResponseEntity.ok(newAccessToken);

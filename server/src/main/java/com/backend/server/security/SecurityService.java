@@ -2,6 +2,7 @@ package com.backend.server.security;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,7 @@ public class SecurityService {
     private final UserRepository userRepository;
     // private final CompanyRepository companyRepository;   // tarviikohan?
     private final CompAppEmailsRepository companyApprovedEmailsRepository;
+    private final AdminRepository adminRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final Encoder encoder;
 
@@ -102,7 +104,54 @@ public class SecurityService {
         return userRepository.save(user); 
     }
 
+    @Transactional
+    public Admin registerAdmin(String email, String password){
+        if(email == null || password == null) {
+            throw new IllegalArgumentException("All fields must be filled");
+        }
+
+        // katso onko jo admin, sallitaan vain yksi
+        List<Admin> admins = adminRepository.findAll();
+        if(admins.size() > 0) {
+            throw new IllegalArgumentException("Admin already exists");
+        }
+
+
+        // tarkista onko sähköposti sallitulla listalla
+        if(!isEmailApproved(email)){
+            throw new IllegalArgumentException("Email is not on any approved list");
+        }
+
+        // tarkista jos käyttäjällä on jo tili
+        if(userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        String encodedPassword = encoder.encode(password);
+
+        Admin admin = new Admin();
+        admin.setEmail(email);
+        admin.setPassword(encodedPassword);
+
+        return adminRepository.save(admin);
+    }
+
     public LoginResponse login(String email, String password){
+        // katso onko email admin 
+        if(adminRepository.findByEmail(email).isPresent()) {
+            Admin admin = adminRepository.findByEmail(email).get();
+            if(encoder.matches(password, admin.getPassword())) {
+                String token = createAccessToken(admin.getEmail(), Role.MASTER);
+                LoginResponse response = new LoginResponse();
+                response.setToken(token);
+                return response;
+            }
+            else {
+                throw new IllegalArgumentException("Wrong password");
+            }
+        }
+
+        // OIKEA LOGIN
     Optional<User> userOptional = userRepository.findByEmail(email);
 
         if(userOptional.isPresent()) {
@@ -160,30 +209,37 @@ public class SecurityService {
     }
 
 
-    public String refreshAccessToken(String refreshToken){
-        try {
-            // token tarkistus
-            String email = verifyToken(refreshToken);
-            Optional<User> userOptional = userRepository.findByEmail(email);
-            if(userOptional.isPresent()) {
-                User user = userOptional.get();
-                // vertaa tietokantatokeniin
-                Optional<RefreshToken> storedRefreshToken = refreshTokenRepository.findByToken(refreshToken);
-                if(storedRefreshToken.isPresent() && storedRefreshToken.get().getUser().equals(user)){
-                    // jos tallennettu token löytyi ja löydetty user täsmää pyynnössä tulleen tokenin useriin ok, uusi token
-                    String newAccessToken = createAccessToken(user.getEmail(), user.getRole());
-                    return newAccessToken;
-                } else {
-                    throw new IllegalArgumentException("Invalid refresh token");
-                }
-            } else {
-                throw new IllegalArgumentException("User not found");
-            }
+    public String refreshAccessToken(String refreshToken) {
+        // email tokenista
+        String emailFromToken = verifyToken(refreshToken);
+        if (emailFromToken == null || emailFromToken.isEmpty()) {
+            throw new IllegalArgumentException("Invalid token: Token verification failed.");
         }
-        catch (JWTVerificationException e) {
-            throw new IllegalArgumentException("Invalid token");
+    
+        // katso löytyykö refreshtoken tietokannasta
+        RefreshToken confirmedToken = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token: Token not found."));
+    
+        // katso onko token voimassa
+        if (confirmedToken.getExpiryDate().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("Invalid token: Token expired.");
         }
+    
+        // katso löytyykö refreshtokenin email tietokannasta
+        User user = userRepository.findByEmail(emailFromToken)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for the provided token."));
+    
+        // vertaa tokenin emailia ja tietokannan emailia
+        if (!user.getEmail().equals(confirmedToken.getUser().getEmail())) {
+            throw new IllegalArgumentException("Invalid token: Token does not match the logged-in user.");
+        }
+    
+        // Generate a new access token
+        return createAccessToken(user.getEmail(), user.getRole());
     }
+    
+    
+    
     
 
     public String expireAllTokens(String email){
@@ -286,5 +342,8 @@ public class SecurityService {
         }
     }
 
-
 }
+
+    
+
+
