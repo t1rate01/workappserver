@@ -18,5 +18,4 @@ public class LoginResponse {
     private String companyname;
     private Map<String, Object> companySettings;
 
-    // TODO: LOGINRESPONSEN TÄYTYY KERTOA SETTINGSIT
 }

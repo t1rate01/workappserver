@@ -120,5 +120,4 @@ public class SecurityRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
-
 }

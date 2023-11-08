@@ -187,7 +187,7 @@ public class SecurityService {
             return JWT.create()
             .withSubject(email)
             .withClaim("role", role.toString())
-            .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpirationTime)) // 36 h
+            .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpirationTime)) 
             .sign(algorithm);
     }
 
@@ -196,7 +196,7 @@ public class SecurityService {
         return JWT.create()
             .withSubject(email)
             .withClaim("role", role.toString())
-            .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenExpirationTime)) // 30 days
+            .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenExpirationTime)) 
             .sign(algorithm);
     }
 
@@ -239,9 +239,6 @@ public class SecurityService {
     }
     
     
-    
-    
-
     public String expireAllTokens(String email){
         Optional<User> userOptional = userRepository.findByEmail(email);
         if(userOptional.isPresent()) {
@@ -309,7 +306,7 @@ public class SecurityService {
     }
 
     public String pairAddedEmailToCompanyWithToken(String token, String newEmail){
-        String addersEmail = verifyToken(token);
+        String addersEmail = verifyToken(token);  // TODO: Tarkista rooli
         Optional<User> userOptional = userRepository.findByEmail(addersEmail);
         if(userOptional.isPresent()) {
             User user = userOptional.get();

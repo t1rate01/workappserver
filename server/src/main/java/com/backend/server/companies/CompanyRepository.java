@@ -10,4 +10,5 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     // etsi companyname perusteella
     Company findByCompanyName(String companyName);
     
+    
 }
