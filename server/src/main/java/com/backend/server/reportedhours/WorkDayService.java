@@ -7,18 +7,21 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.server.reportedhours.DTO.WorkDayResponseDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import com.backend.server.utility.HolidayChecker;
 
 @Service
 @RequiredArgsConstructor
 public class WorkDayService {
     private final WorkDayRepository workDayRepository;
     private final SecurityService securityService;
-
+    private final HolidayChecker holidayChecker;
+    
 
     public WorkDay saveWorkDay(WorkDay workDay) {
         return workDayRepository.save(workDay);
@@ -70,18 +73,27 @@ public class WorkDayService {
     }
 
     @Transactional
-    public WorkDay updateShift(String token, LocalDate date, LocalTime startTime, 
+    public WorkDayResponseDTO updateShift(String token, LocalDate date, LocalTime startTime, 
                                LocalTime endTime, Integer breaksTotal, String description) {
+                                
+        // tarkista onko päivä tulevaisuudessa
+        if(date.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Can't fill future dates");
+        } 
+
         // käyttäjä tokenista
         User user = securityService.getUserFromToken(token);
+      
+ 
 
         // Tarkista onko päivälle jo olemassa entry
         Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user, date);
-
+     
         WorkDay workDay;
         if(existingWorkDay.isPresent()) {
             // Jos olemassa, päivitä olemassa oleva entry
             workDay = existingWorkDay.get();
+            System.out.println("workday: " + workDay);
             // Ehkä tarkistus jos päivitetään vuoroa joka on aloitettu mutta ei ole lopetettu
             
         } else {
@@ -90,15 +102,35 @@ public class WorkDayService {
             workDay.setUser(user);
             workDay.setDate(date);
         }
+      
+
+        // pyhäpäivä tarkistus
+        Boolean isHoliday = holidayChecker.isHoliday(date);
+        // TODO: fix pyhäpäivä tarkistus
+        //Boolean isHoliday = false;
+
+        // conversio date -> localdate
+        
 
         // Loput tiedot
         workDay.setStartTime(startTime);
         workDay.setEndTime(endTime);
         workDay.setBreaksTotal(breaksTotal);
         workDay.setDescription(description);
+        workDay.setIsHoliday(isHoliday);
+
+
 
         // Tallennus
-        return workDayRepository.save(workDay);
+         WorkDay savedWorkDay = workDayRepository.save(workDay);
+
+        // Palautus
+        WorkDayResponseDTO workDayResponseDTO = new WorkDayResponseDTO();
+        workDayResponseDTO.setDate(savedWorkDay.getDate());
+        workDayResponseDTO.setStartTime(savedWorkDay.getStartTime());
+        workDayResponseDTO.setEndTime(savedWorkDay.getEndTime());
+
+        return workDayResponseDTO;
     }
 
     public List<WorkDay> getUserShifts(User user) {  // OVERLOAD, Hae default määrä 31
@@ -108,6 +140,16 @@ public class WorkDayService {
     public List<WorkDay> getUserShifts(User user, Integer limit) {  // HAE RAJALLINEN MÄÄRÄ VUOROJA
         return workDayRepository.findLastShiftsForUser(user.getId(), limit);
     }
+
+    public void deleteShiftByID(Long id) {
+        workDayRepository.deleteById(id);
+    }
+
+    public WorkDay findByID (Long id) {
+        return workDayRepository.findById(id).orElse(null);
+    }
+
+
     
     
 }

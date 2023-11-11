@@ -284,7 +284,9 @@ public class SecurityService {
 
     public User getUserFromToken(String token) {
         String email = verifyToken(token);
+       
         Optional<User> userOptional = userRepository.findByEmail(email);
+
         if(userOptional.isPresent()) {
             return userOptional.get();
         }

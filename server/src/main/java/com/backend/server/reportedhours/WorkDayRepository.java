@@ -23,5 +23,7 @@ public interface WorkDayRepository extends JpaRepository<WorkDay, Long> {
     @Query("SELECT wd FROM WorkDay wd JOIN wd.user u WHERE u.company.id = :companyId")
     List<WorkDay> findAllByCompanyId(Long companyId);
 
-    Optional<WorkDay> findByUserAndDate(User user, LocalDate date);
+    @Query("SELECT wd FROM WorkDay wd WHERE wd.user = :user AND wd.date = :date")
+    Optional<WorkDay> findByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
+
 }

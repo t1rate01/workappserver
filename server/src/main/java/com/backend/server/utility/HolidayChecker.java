@@ -38,6 +38,7 @@ public class HolidayChecker {
         if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
             return true;
         }
+
     
         // App propertiesissa voi vaihtaa käytetäänkö API:a vai ei
         if(useHolidayApi) {
@@ -52,9 +53,9 @@ public class HolidayChecker {
                 holidays.add(holiday);
             }
     
-            // Kerätään kovakoodatut muuttuvat pyhäpäivät propertiesistä
+            // Kerätään kovakoodatut muuttuvat pyhäpäivät propertiesistä // TODO: tarkista että toimi
             for (String variableHoliday : variableHolidays.split(",")) {
-                LocalDate holiday = LocalDate.parse(date.getYear() + "-" + variableHoliday);
+                LocalDate holiday = LocalDate.parse(variableHoliday);
                 holidays.add(holiday);
             }
 

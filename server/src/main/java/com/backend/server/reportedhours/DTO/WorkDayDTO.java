@@ -4,6 +4,9 @@ package com.backend.server.reportedhours.DTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,13 +18,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkDayDTO {
+    private Long id;
 
-    private Long userId;
     private LocalDate date;
+
+
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer breaksTotal;
-    private Boolean isHoliday = false;
+    private Boolean isHoliday;
+    // vapaahetoinen isHoliday, se tarkistetaan serverillä
 
     @Size(max=255, message="Description can't be longer than 255 characters")
     private String description;
