@@ -4,7 +4,7 @@
   
 Method: PUT  
 Odottaa Authorization tokenia, ja JSON muotoista tietoa, esimerkki:  
-´´´json
+```json
 {
     "date":"2023-11-11",
     "startTime":"09:00",
@@ -12,19 +12,19 @@ Odottaa Authorization tokenia, ja JSON muotoista tietoa, esimerkki:
     "breaksTotal":30,
     "description":"Worked on project X"
 }
-´´´
+```
 **Päivämäärä on muodossa yyyy-MM-dd**  
   
 Saa käyttäjän tokenista.  
 Tarkistaa löytyykö tiedoilla päivää ja päivittää sen, jos ei löydy niin luo päivän ja täyttää sen.  
 Vastaus onnistuessa tulee 200OK ja JSON:  
-´´´json
+```json
 {
   "date": "2023-11-11",
   "startTime": "09:00:00",
   "endTime": "17:00:00"
 }
-´´´
+```
 Endpoint ei hyväksy tulevaisuuden päiviä ja vastaa siihen "Can't fill future dates".  
 Tarkistaa myös onko päivämäärä pyhäpäivä ja täyttää itse sen booleanin (sitä ei tule laittaa PUT mukaan  niinkuin esimerkissäkään ei ole). 
 
@@ -32,7 +32,7 @@ Tarkistaa myös onko päivämäärä pyhäpäivä ja täyttää itse sen boolean
 METHOD: GET  
 Odottaa authorization tokenia, jonka perusteella tuo oikean henkilön vuorot.  
 Palautus on JSON array muotoa esim:  
-´´´jsonarray
+```jsonarray
 [
   {
     "id": 105,
@@ -53,7 +53,7 @@ Palautus on JSON array muotoa esim:
     "description": "Worked on project X"
   },
 ]
-´´´
+```
 Tulee uusin ensin järjestyksessä.  
 
 ### Custom määrä työvuoron haku - /api/report/personal/{amount}  
