@@ -2,7 +2,10 @@ package com.backend.server.reportedhours;
 
 
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import com.backend.server.reportedhours.DTO.WorkDayDTO;
 import com.backend.server.reportedhours.DTO.WorkDayResponseDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
+import com.backend.server.users.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkDayRestController {
     private final WorkDayService workDayService;
     private final SecurityService securityService;
+    private final UserRepository userRepository;
 
   /*   @PostMapping("/add")
     public ResponseEntity<?> addShift(@Valid @RequestBody WorkDayDTO workDayDTO,
@@ -202,6 +207,73 @@ public class WorkDayRestController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/punchclock/{email}")
+    public ResponseEntity<?> getAtWork(@PathVariable String email){
+        try {
+            // etsi käyttäjä sähköpostilla
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+
+            // katso serverin päivämäärä, ja katso onko vuoroa tällä päivämäärällä
+            LocalDate today = LocalDate.now();
+            // hae viimeisin työvuoro
+            List<WorkDay> userShifts = workDayService.getUserShifts(user.get(), 1);
+            // katso työvuoron päivämäärä
+            LocalDate shiftDate = userShifts.get(0).getDate();
+            // jos päivämäärä on sama kuin tänään, palauta true
+            if (shiftDate.equals(today)) {
+                return ResponseEntity.ok(true);
+            } else {
+                return ResponseEntity.ok(false);
+            }     
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/punchin/{email}")
+    public ResponseEntity<?> punchIn(@RequestBody LocalTime startTime, @PathVariable String email){
+        try {
+            // etsi käyttäjä
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+
+            User confirmedUser = user.get();
+            // lisää tälle päivälle vuoro ja sille aloitusajaksi annettu aika
+            WorkDay workDay = workDayService.punchIn(confirmedUser, startTime);
+
+            return ResponseEntity.ok(workDay);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/punchout/{email}")
+    public ResponseEntity<?> punchOut(@RequestBody LocalTime endTime, @PathVariable String email){
+        try {
+            // etsi käyttäjä
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+
+            User confirmedUser = user.get();
+            // päätä päivän vuoro ja päivitä siihen lopetusajaksi annettu aika
+            WorkDay workDay = workDayService.punchOut(confirmedUser, endTime);
+
+            return ResponseEntity.ok(workDay);
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
