@@ -1,6 +1,9 @@
 package com.backend.server.shifts;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.backend.server.reportedhours.DTO.WorkDayDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.shifts.DTO.ShiftDTO;
+import com.backend.server.shifts.DTO.ShiftListDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 
@@ -88,7 +92,24 @@ public class ShiftRestController {
             // käyttäjä tokenista
             User user = securityService.getUserFromToken(token);
             // hae käyttäjälle määrätyt vuorot
-            return ResponseEntity.ok(shiftService.getFutureShiftsById(user.getId()));
+            List<Shift> assignedshifts = shiftService.getFutureShiftsById(user.getId());
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
+            
         }
         catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
@@ -98,13 +119,29 @@ public class ShiftRestController {
         }
     }
 
-       @GetMapping("/personal/all")
+    @GetMapping("/personal/all")
     public ResponseEntity<?> getAllPersonalAssignedShifts(@RequestHeader("Authorization")String token){
         try {
             // käyttäjä tokenista
             User user = securityService.getUserFromToken(token);
             // hae käyttäjälle määrätyt vuorot
-            return ResponseEntity.ok(shiftService.getShiftsById(user.getId()));
+            List<Shift> assignedshifts = shiftService.getShiftsById(user.getId());
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
         }
         catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
@@ -125,7 +162,23 @@ public class ShiftRestController {
             // hae käyttäjän company
             Long companyId = supervisor.getCompany().getId();
             // hae kaikki companyn määrätyt vuorot
-            return ResponseEntity.ok(shiftService.getAllFutureShiftsByCompanyId(companyId));
+            List<Shift> assignedshifts = shiftService.getAllFutureShiftsByCompanyId(companyId);
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
         }
         catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
@@ -146,7 +199,23 @@ public class ShiftRestController {
             // hae käyttäjän company
             Long companyId = supervisor.getCompany().getId();
             // hae kaikki companyn määrätyt vuorot
-            return ResponseEntity.ok(shiftService.getAllShiftsByCompanyId(companyId));
+            List<Shift> assignedshifts = shiftService.getAllShiftsByCompanyId(companyId);
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
         }
         catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");

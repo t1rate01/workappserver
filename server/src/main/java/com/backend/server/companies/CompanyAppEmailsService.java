@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.server.utility.Role;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,12 +21,25 @@ public class CompanyAppEmailsService {
         return compAppEmailsRepository.findById(id).orElse(null);
     }
 
-    public String deleteCompanyApprovedEmails(Long id) {
+    public void deleteCompanyApprovedEmails(Long id) {
         compAppEmailsRepository.deleteById(id);
-        return "Company Approved Emails removed !! " + id;
     }
     
     public List<CompanyApprovedEmails> getCompanyApprovedEmails() {
         return compAppEmailsRepository.findAll();
+    }
+
+    public void addEmail(Company company, String email, Role role) {
+        CompanyApprovedEmails companyApprovedEmails = new CompanyApprovedEmails();
+        companyApprovedEmails.setCompany(company);
+        companyApprovedEmails.setEmail(email);
+        companyApprovedEmails.setRole(role);
+        compAppEmailsRepository.save(companyApprovedEmails);
+    }
+    
+    public void updateRole(Long id, Role role) {
+        CompanyApprovedEmails companyApprovedEmails = compAppEmailsRepository.findById(id).orElse(null);
+        companyApprovedEmails.setRole(role);
+        compAppEmailsRepository.save(companyApprovedEmails);
     }
 }

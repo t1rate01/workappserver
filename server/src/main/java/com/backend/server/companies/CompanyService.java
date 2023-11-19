@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.server.users.User;
+import com.backend.server.users.UserRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 
@@ -12,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CompanyService {
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
     
     public Company saveCompany(Company company) {
@@ -20,6 +25,10 @@ public class CompanyService {
 
     public Company getCompanyById(Long id) {
         return companyRepository.findById(id).orElse(null);
+    }
+
+    public List<Company> getCompanies() {
+        return companyRepository.findAll();
     }
 
     public String deleteCompany(Long id) {
@@ -31,10 +40,10 @@ public class CompanyService {
         return companyRepository.findByCompanyName(companyName);
     }
 
-    public List<Company> getCompanies() {
-        return companyRepository.findAll();
+    @Transactional
+    public List<User> getAllWorkers(Company company) {
+        return userRepository.findByCompany(company);
     }
-   
 
     // Lisää jos tarvii, esim update
 }

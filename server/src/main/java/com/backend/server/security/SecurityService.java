@@ -341,6 +341,13 @@ public class SecurityService {
         }
     }
 
+    public void updateRole(Long userId,Role role) {
+        User user = userRepository.findById(userId).orElse(null);
+        user.setRole(role);
+        userRepository.save(user);
+    }
+
+
 }
 
     
