@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.reportedhours.DTO.PunchClockResponseDTO;
+import com.backend.server.reportedhours.DTO.PunchPostDTO;
 import com.backend.server.reportedhours.DTO.WorkDayDTO;
 import com.backend.server.reportedhours.DTO.WorkDayResponseDTO;
 import com.backend.server.security.SecurityService;
@@ -220,58 +222,86 @@ public class WorkDayRestController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
+              // TODO: etsi käyttäjän SHIFT, joka on tälle päivälle
+
             // katso serverin päivämäärä, ja katso onko vuoroa tällä päivämäärällä
             LocalDate today = LocalDate.now();
             // hae viimeisin työvuoro
             List<WorkDay> userShifts = workDayService.getUserShifts(user.get(), 1);
-            // katso työvuoron päivämäärä
-            LocalDate shiftDate = userShifts.get(0).getDate();
-            // jos päivämäärä on sama kuin tänään, palauta true
-            if (shiftDate.equals(today)) {
-                return ResponseEntity.ok(true);
+
+            LocalDate shiftDate;
+            LocalTime shiftStartTime;
+            LocalTime shiftEndTime;
+            
+
+            if (userShifts.isEmpty()) {
+                shiftDate = LocalDate.of(2000, 1, 1);  // jos vuoroa ei löydy, palauta joku vanha päivä
             } else {
-                return ResponseEntity.ok(false);
-            }     
+                shiftDate = userShifts.get(0).getDate();
+            }
+
+            // jos päivämäärä on sama kuin tänään, palauta true
+
+            // valmistele DTO
+            PunchClockResponseDTO DTO = new PunchClockResponseDTO();
+            DTO.setFirstName(user.get().getFirstName());
+            DTO.setLastName(user.get().getLastName());
+            DTO.setDate(today);
+            // TODO: lisää startTime ja endTime kun shift valmis
+            // TODO: lisää description päivän shiftistä
+            
+
+            if(shiftDate.equals(today) && userShifts.get(0).getEndTime() == null) {
+                DTO.setIsAtWork(true);
+            } else {
+                DTO.setIsAtWork(false);
+            }   
+            return ResponseEntity.ok(DTO); 
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PostMapping("/punchin/{email}")
-    public ResponseEntity<?> punchIn(@RequestBody LocalTime startTime, @PathVariable String email){
+    @PostMapping("/punchin")  // muokattu käyttämään email myös requestbodyssä
+    public ResponseEntity<?> punchIn(@RequestBody PunchPostDTO punchPostDTO){
         try {
             // etsi käyttäjä
-            Optional<User> user = userRepository.findByEmail(email);
+            Optional<User> user = userRepository.findByEmail(punchPostDTO.getEmail());
             if (user.isEmpty()) {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
+          
+
             User confirmedUser = user.get();
             // lisää tälle päivälle vuoro ja sille aloitusajaksi annettu aika
-            WorkDay workDay = workDayService.punchIn(confirmedUser, startTime);
-
-            return ResponseEntity.ok(workDay);
+            WorkDay workDay = workDayService.punchIn(confirmedUser, punchPostDTO.getTime());
+            PunchClockResponseDTO DTO = new PunchClockResponseDTO();
+            DTO.setStartTime(punchPostDTO.getTime());
+            return ResponseEntity.ok(DTO.getStartTime());
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PostMapping("/punchout/{email}")
-    public ResponseEntity<?> punchOut(@RequestBody LocalTime endTime, @PathVariable String email){
+    @PostMapping("/punchout") // muokattu käyttämään email myös requestbodyssä
+    public ResponseEntity<?> punchOut(@RequestBody PunchPostDTO punchPostDTO){
         try {
             // etsi käyttäjä
-            Optional<User> user = userRepository.findByEmail(email);
+            Optional<User> user = userRepository.findByEmail(punchPostDTO.getEmail());
             if (user.isEmpty()) {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
             User confirmedUser = user.get();
             // päätä päivän vuoro ja päivitä siihen lopetusajaksi annettu aika
-            WorkDay workDay = workDayService.punchOut(confirmedUser, endTime);
+            WorkDay workDay = workDayService.punchOut(confirmedUser, punchPostDTO.getTime());
 
-            return ResponseEntity.ok(workDay);
+            PunchClockResponseDTO DTO = new PunchClockResponseDTO();
+            DTO.setEndTime(punchPostDTO.getTime());
+            return ResponseEntity.ok(DTO.getEndTime());
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

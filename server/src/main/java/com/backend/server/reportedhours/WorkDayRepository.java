@@ -23,7 +23,7 @@ public interface WorkDayRepository extends JpaRepository<WorkDay, Long> {
     @Query("SELECT wd FROM WorkDay wd JOIN wd.user u WHERE u.company.id = :companyId")
     List<WorkDay> findAllByCompanyId(Long companyId);
 
-    @Query("SELECT wd FROM WorkDay wd WHERE wd.user = :user AND wd.date = :date")
-    Optional<WorkDay> findByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
+    @Query(value = "SELECT * FROM reported_hours WHERE user_id = :userId AND date = :date ORDER BY date DESC LIMIT 1", nativeQuery = true)
+    Optional<WorkDay> findByUserAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
 }

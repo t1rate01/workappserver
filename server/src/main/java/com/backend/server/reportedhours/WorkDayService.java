@@ -49,7 +49,7 @@ public class WorkDayService {
         User user = securityService.getUserFromToken(token);
 
         // Tarkista onko päivälle jo olemassa entry
-        Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user, date);
+        Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user.getId(), date);
 
         WorkDay workDay;
         if(existingWorkDay.isPresent()) {
@@ -80,13 +80,19 @@ public class WorkDayService {
         workDay.setUser(user);
         workDay.setDate(LocalDate.now());
         workDay.setStartTime(startTime);
+        workDay.setIsHoliday(holidayChecker.isHoliday(LocalDate.now()));
+        workDay.setBreaksTotal(null);
+        workDay.setDescription(null);
         return workDayRepository.save(workDay);
         
     }
 
     @Transactional
     public WorkDay punchOut(User user, LocalTime endTime){
-        WorkDay workDay = workDayRepository.findByUserAndDate(user, LocalDate.now()).orElse(null);
+        WorkDay workDay = workDayRepository.findByUserAndDate(user.getId(), LocalDate.now()).orElse(null);
+        if (workDay == null) {
+            throw new IllegalArgumentException("No started workday");
+        }
         workDay.setEndTime(endTime);
         return workDayRepository.save(workDay);
     }
@@ -106,7 +112,7 @@ public class WorkDayService {
  
 
         // Tarkista onko päivälle jo olemassa entry
-        Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user, date);
+        Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user.getId(), date);
      
         WorkDay workDay;
         if(existingWorkDay.isPresent()) {
