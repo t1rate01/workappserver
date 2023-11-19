@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.backend.server.reportedhours.DTO.WorkDayResponseDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
-import com.backend.server.users.UserRepository;
+
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class WorkDayService {
     private final WorkDayRepository workDayRepository;
     private final SecurityService securityService;
     private final HolidayChecker holidayChecker;
-    private final UserRepository userRepository;
+
     
 
     public WorkDay saveWorkDay(WorkDay workDay) {
@@ -174,6 +174,11 @@ public class WorkDayService {
         return workDayRepository.findById(id).orElse(null);
     }
 
+    @Transactional
+    public void deleteOldWorkDays(int days){
+        LocalDate cutOff = LocalDate.now().minusDays(days);
+        workDayRepository.deleteOldShifts(cutOff);
+    }
 
     
     

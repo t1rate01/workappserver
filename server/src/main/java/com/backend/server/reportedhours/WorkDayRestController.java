@@ -74,7 +74,6 @@ public class WorkDayRestController {
         try {
             // Käyttäjäntarkistus, heittää IllegalArgumentException jos ei toimi
             User user = securityService.getUserFromToken(token);
-            System.out.println("WorkdayDTO: " + workDayDTO.toString() + " token: " + token + " user: " + user.toString() + " date: " + workDayDTO.getDate() + " startTime: " + workDayDTO.getStartTime() + " endTime: " + workDayDTO.getEndTime() + " breaksTotal: " + workDayDTO.getBreaksTotal() + " description: " + workDayDTO.getDescription());
 
             WorkDayResponseDTO workDay = workDayService.updateShift(token, workDayDTO.getDate(), 
                                                          workDayDTO.getStartTime(), 

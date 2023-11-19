@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.backend.server.companies.Company;
 import com.backend.server.security.RefreshToken;
+import com.backend.server.shifts.Shift;
 import com.backend.server.utility.Auditable;
 import com.backend.server.utility.Role;
 
@@ -60,6 +61,7 @@ public class User extends Auditable {
 
     @OneToMany(mappedBy = "user")
     private Set<RefreshToken> refreshTokens;
+
 
  // TODO: SUHTEET SHIFTS JA TYÖAIKARAPORTIT
     

@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.backend.server.users.User;
 
 @Repository
 public interface WorkDayRepository extends JpaRepository<WorkDay, Long> {
@@ -26,4 +25,7 @@ public interface WorkDayRepository extends JpaRepository<WorkDay, Long> {
     @Query(value = "SELECT * FROM reported_hours WHERE user_id = :userId AND date = :date ORDER BY date DESC LIMIT 1", nativeQuery = true)
     Optional<WorkDay> findByUserAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
+    // poista vanhentuneet shiftit cutoff päivän jälkeen
+    @Query(value = "DELETE FROM reported_hours WHERE date < :date", nativeQuery = true)
+    void deleteOldShifts(@Param("date") LocalDate date);
 }

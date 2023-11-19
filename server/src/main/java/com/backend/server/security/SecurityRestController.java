@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.server.reportedhours.WorkDayRepository;
 import com.backend.server.security.DTO.RegisterDTO;
 import com.backend.server.users.User;
-import com.backend.server.users.UserRepository;
-import com.backend.server.utility.HolidayChecker;
+
 import com.backend.server.utility.LoginResponse;
 
 import jakarta.validation.Valid;
@@ -29,10 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")  // kaikki alkaa /api + endpointin /osote
 public class SecurityRestController {
     private final SecurityService securityService;
-    private final UserRepository userRepository;
-    private final HolidayChecker holidayChecker;
-    private final WorkDayRepository workDayRepository;
-    private final AdminRepository adminRepository;
+
 
 
     @PostMapping("/register")
