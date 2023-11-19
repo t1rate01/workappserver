@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.companies.DTO.NewMailDTO;
 import com.backend.server.companies.DTO.UserListDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
@@ -68,7 +69,7 @@ public ResponseEntity<?> getCompanysWorkers(@RequestHeader("Authorization") Stri
 }
 
 @PostMapping("/workers/add")
-public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String token, @RequestBody String email, @RequestBody Role role){
+public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String token, @RequestBody NewMailDTO newMailDTO){
     try {
         // käyttäjätarkistus ja roolitarkistus
         User user = securityService.getUserFromToken(token);
@@ -78,7 +79,7 @@ public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String to
         // hae käyttäjän company
         Company company = user.getCompany();
         // lisää sähköposti companyn hyväksyttyihin sähköposteihin
-        approvedEmails.addEmail(company, email, role);
+        approvedEmails.addEmail(company, newMailDTO.getEmail(), newMailDTO.getRole());
         return ResponseEntity.ok("Email added");
     }
     catch (IllegalArgumentException e) {
