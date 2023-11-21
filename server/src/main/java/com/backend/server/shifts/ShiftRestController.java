@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.companies.Company;
 import com.backend.server.reportedhours.DTO.WorkDayDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.shifts.DTO.ShiftDTO;
@@ -48,12 +49,22 @@ public class ShiftRestController {
             if(worker == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found");
             }
+
+            // tarkista että työntekijä kuuluu samaan yritykseen kuin esimies
+            if(worker.getCompany().getId() != supervisor.getCompany().getId()){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            }
+
+            Company confirmedCompany = supervisor.getCompany();
+
             // lisää vuoro
             ShiftDTO shiftDTO = shiftService.addShift(worker, workDayDTO.getDate(), 
                                                         workDayDTO.getStartTime(), 
                                                         workDayDTO.getEndTime(),
                                                         workDayDTO.getBreaksTotal(),
-                                                        workDayDTO.getDescription());
+                                                        workDayDTO.getDescription(),
+                                                        confirmedCompany
+                                                        );
             
 
             return ResponseEntity.ok(shiftDTO);
@@ -102,6 +113,8 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setCompanyId(assignedshift.getCompany().getId());
+                shiftListDTO.setCompanyName(assignedshift.getCompany().getCompanyName());
                 // null check breaks
                 if(assignedshift.getBreaksTotal() == null){
                     shiftListDTO.setBreaksTotal(0);
@@ -109,7 +122,13 @@ public class ShiftRestController {
                 else{
                     shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
                 }
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check description 
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTOs.add(shiftListDTO);
             }
@@ -181,6 +200,8 @@ public class ShiftRestController {
                 shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
                 shiftListDTO.setDescription(assignedshift.getDescription());
                 shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTO.setCompanyId(companyId);
+                shiftListDTO.setCompanyName(supervisor.getCompany().getCompanyName());
                 shiftListDTOs.add(shiftListDTO);
             }
 

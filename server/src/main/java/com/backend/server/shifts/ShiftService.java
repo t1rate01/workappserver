@@ -7,9 +7,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.server.companies.Company;
 import com.backend.server.shifts.DTO.ShiftDTO;
 import com.backend.server.users.User;
-
+import com.backend.server.users.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ShiftService {
         private final ShiftRepository shiftRepository;
+        private final UserRepository userRepository;
 
         public Shift saveShift(Shift shift) {
                 return shiftRepository.save(shift);
@@ -39,15 +41,16 @@ public class ShiftService {
         @Transactional
         public List<Shift> getFutureShiftsById(Long id) {
                 LocalDate date = LocalDate.now();
-                return shiftRepository.findFutureShiftsByUserId(id, date);
+                Long companyId = userRepository.findById(id).get().getCompany().getId();
+                return shiftRepository.findFutureShiftsByUserId(id, date, companyId);
         }
 
         @Transactional
-        public ShiftDTO addShift(User worker, LocalDate date, LocalTime startTime, LocalTime endTime, Integer breaksTotal, String description){
+        public ShiftDTO addShift(User worker, LocalDate date, LocalTime startTime, LocalTime endTime, Integer breaksTotal, String description, Company company){
                 User user = worker;
-
+                
                 // Tarkista onko päivälle jo olemassa entry 
-                Optional<Shift> existingShift = shiftRepository.findByUserAndDate(user.getId(), date);
+                Optional<Shift> existingShift = shiftRepository.findByUserAndDate(user.getId(), date, company.getId());
                 
                 Shift shift;
                 if(existingShift.isPresent()){
@@ -69,6 +72,8 @@ public class ShiftService {
                 if(description != null){ // koska annetaan mahdollisuus olla määrämättä kuvausta
                         shift.setDescription(description);
                 }
+                shift.setCompany(company);
+                
                 //tallennus 
                 shiftRepository.save(shift);
                 // palautus
