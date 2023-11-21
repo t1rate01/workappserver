@@ -7,7 +7,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+
+@Repository
 public interface ShiftRepository extends JpaRepository<Shift, Long>{
 
     List<Shift> findAllByUserId(Long userId);
@@ -32,5 +35,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long>{
     // poista vanhentuneet shiftit cutoff päivän jälkeen
     @Query(value = "DELETE FROM shifts WHERE date < :date", nativeQuery = true)
     void deleteOldShifts(@Param("date") LocalDate date);
+
+    
     
 }
