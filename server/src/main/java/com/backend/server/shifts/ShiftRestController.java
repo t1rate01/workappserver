@@ -102,7 +102,13 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
                 shiftListDTO.setDescription(assignedshift.getDescription());
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTOs.add(shiftListDTO);
