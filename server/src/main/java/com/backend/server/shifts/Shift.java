@@ -3,6 +3,7 @@ package com.backend.server.shifts;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.backend.server.companies.Company;
 import com.backend.server.users.User;
 
 import jakarta.persistence.Column;
@@ -45,5 +46,11 @@ public class Shift {
     private Integer breaksTotal;
 
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable=false, referencedColumnName = "id")  // KÄYTTÄJÄN TYÖNANTAJA
+    private Company company;
+
+    
     
 }

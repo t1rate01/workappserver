@@ -22,5 +22,7 @@ public class ShiftListDTO {
     private LocalTime startTime;
     private LocalTime endTime;
     private String description;
+    private Long companyId;
+    private String companyName;
     
 }
