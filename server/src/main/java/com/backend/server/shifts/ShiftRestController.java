@@ -160,8 +160,20 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
+                // null check description
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTOs.add(shiftListDTO);
             }
@@ -198,8 +210,20 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
+                // null check description
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTO.setCompanyId(company.getId());
                 shiftListDTO.setCompanyName(company.getCompanyName());
@@ -238,8 +262,20 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
+                // null check description
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTO.setCompanyId(company.getId());
                 shiftListDTO.setCompanyName(company.getCompanyName());
@@ -278,8 +314,20 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
+                // null check description
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTO.setCompanyId(company.getId());
                 shiftListDTO.setCompanyName(company.getCompanyName());
@@ -318,8 +366,20 @@ public class ShiftRestController {
                 shiftListDTO.setLastName(assignedshift.getUser().getLastName());
                 shiftListDTO.setStartTime(assignedshift.getStartTime());
                 shiftListDTO.setEndTime(assignedshift.getEndTime());
-                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
-                shiftListDTO.setDescription(assignedshift.getDescription());
+                // null check breaks
+                if(assignedshift.getBreaksTotal() == null){
+                    shiftListDTO.setBreaksTotal(0);
+                }
+                else{
+                    shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                }
+                // null check description
+                if(assignedshift.getDescription() == null){
+                    shiftListDTO.setDescription("");
+                }
+                else{
+                    shiftListDTO.setDescription(assignedshift.getDescription());
+                }
                 shiftListDTO.setDate(assignedshift.getDate());
                 shiftListDTO.setCompanyId(company.getId());
                 shiftListDTO.setCompanyName(company.getCompanyName());

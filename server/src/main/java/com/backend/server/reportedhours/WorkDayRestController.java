@@ -107,8 +107,20 @@ public class WorkDayRestController {
                         dto.setDate(workday.getDate());
                         dto.setStartTime(workday.getStartTime());
                         dto.setEndTime(workday.getEndTime());
-                        dto.setBreaksTotal(workday.getBreaksTotal());
-                        dto.setDescription(workday.getDescription());
+                        // null check
+                        if(workday.getBreaksTotal() != null){
+                            dto.setBreaksTotal(workday.getBreaksTotal());
+                        }
+                        else {
+                            dto.setBreaksTotal(0);
+                        }
+                        // null check
+                        if(workday.getDescription() != null){
+                            dto.setDescription(workday.getDescription());
+                        }
+                        else {
+                            dto.setDescription("");
+                        }
                         dto.setIsHoliday(workday.getIsHoliday());
                         return dto;
     })
@@ -140,8 +152,20 @@ public class WorkDayRestController {
                             dto.setDate(workday.getDate());
                             dto.setStartTime(workday.getStartTime());
                             dto.setEndTime(workday.getEndTime());
-                            dto.setBreaksTotal(workday.getBreaksTotal());
-                            dto.setDescription(workday.getDescription());
+                            // null check breaks
+                            if(workday.getBreaksTotal() != null){
+                                dto.setBreaksTotal(workday.getBreaksTotal());
+                            }
+                            else {
+                                dto.setBreaksTotal(0);
+                            }
+                            // null check description
+                            if(workday.getDescription() != null){
+                                dto.setDescription(workday.getDescription());
+                            }
+                            else {
+                                dto.setDescription("");
+                            }
                             dto.setIsHoliday(workday.getIsHoliday());
                             return dto;
         })
@@ -174,8 +198,19 @@ public class WorkDayRestController {
                             dto.setDate(workday.getDate());
                             dto.setStartTime(workday.getStartTime());
                             dto.setEndTime(workday.getEndTime());
-                            dto.setBreaksTotal(workday.getBreaksTotal());
-                            dto.setDescription(workday.getDescription());
+                            // null check breaks and description
+                            if(workday.getBreaksTotal() != null){
+                                dto.setBreaksTotal(workday.getBreaksTotal());
+                            }
+                            else {
+                                dto.setBreaksTotal(0);
+                            }
+                            if(workday.getDescription() != null){
+                                dto.setDescription(workday.getDescription());
+                            }
+                            else {
+                                dto.setDescription("");
+                            }
                             dto.setIsHoliday(workday.getIsHoliday());
                             return dto;
         })
@@ -331,8 +366,20 @@ public class WorkDayRestController {
                             dto.setDate(workday.getDate());
                             dto.setStartTime(workday.getStartTime());
                             dto.setEndTime(workday.getEndTime());
-                            dto.setBreaksTotal(workday.getBreaksTotal());
-                            dto.setDescription(workday.getDescription());
+                            // null check breaks 
+                            if(workday.getBreaksTotal() != null){
+                                dto.setBreaksTotal(workday.getBreaksTotal());
+                            }
+                            else {
+                                dto.setBreaksTotal(0);
+                            }
+                            // null check description
+                            if(workday.getDescription() != null){
+                                dto.setDescription(workday.getDescription());
+                            }
+                            else {
+                                dto.setDescription("");
+                            }
                             dto.setIsHoliday(workday.getIsHoliday());
                             return dto;
         })
@@ -371,8 +418,20 @@ public class WorkDayRestController {
                             dto.setDate(workday.getDate());
                             dto.setStartTime(workday.getStartTime());
                             dto.setEndTime(workday.getEndTime());
-                            dto.setBreaksTotal(workday.getBreaksTotal());
-                            dto.setDescription(workday.getDescription());
+                            // null check breaks
+                            if(workday.getBreaksTotal() != null){
+                                dto.setBreaksTotal(workday.getBreaksTotal());
+                            }
+                            else {
+                                dto.setBreaksTotal(0);
+                            }
+                            // null check description
+                            if(workday.getDescription() != null){
+                                dto.setDescription(workday.getDescription());
+                            }
+                            else {
+                                dto.setDescription("");
+                            }
                             dto.setIsHoliday(workday.getIsHoliday());
                             return dto;
         }
