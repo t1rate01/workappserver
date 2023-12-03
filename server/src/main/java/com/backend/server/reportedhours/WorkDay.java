@@ -7,7 +7,6 @@ import com.backend.server.users.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -35,7 +34,7 @@ public class WorkDay {
     private User user;
 
     
-    @Column(nullable=false, unique = true)
+    @Column(nullable=false)
     private LocalDate date;
 
     @Column(nullable=false)

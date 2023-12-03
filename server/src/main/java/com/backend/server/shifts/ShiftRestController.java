@@ -179,15 +179,16 @@ public class ShiftRestController {
     @GetMapping("/everyone") // companyn kaikkien työntekijöiden kaikki TULEVAT määrätyt vuorot
     public ResponseEntity<?> getAllFutureAssignedShifts(@RequestHeader("Authorization") String token){
         try {
-            // varmenna token ja rooli
-            User supervisor = securityService.getUserFromToken(token);
-            if(!securityService.isSuperVisor(supervisor.getRole())){
+            // varmenna token, ei rajata roolilla
+            User user= securityService.getUserFromToken(token);
+           
+            // hae käyttäjän company
+            Company company = user.getCompany();
+            if (company == null){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
             }
-            // hae käyttäjän company
-            Long companyId = supervisor.getCompany().getId();
             // hae kaikki companyn määrätyt vuorot
-            List<Shift> assignedshifts = shiftService.getAllFutureShiftsByCompanyId(companyId);
+            List<Shift> assignedshifts = shiftService.getAllFutureShiftsByCompanyId(company.getId());
             List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
             for (Shift assignedshift : assignedshifts){
                 ShiftListDTO shiftListDTO = new ShiftListDTO();
@@ -200,8 +201,8 @@ public class ShiftRestController {
                 shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
                 shiftListDTO.setDescription(assignedshift.getDescription());
                 shiftListDTO.setDate(assignedshift.getDate());
-                shiftListDTO.setCompanyId(companyId);
-                shiftListDTO.setCompanyName(supervisor.getCompany().getCompanyName());
+                shiftListDTO.setCompanyId(company.getId());
+                shiftListDTO.setCompanyName(company.getCompanyName());
                 shiftListDTOs.add(shiftListDTO);
             }
 
@@ -215,18 +216,19 @@ public class ShiftRestController {
         }
     }
 
-        @GetMapping("/everyone/all") // companyn kaikkien työntekijöiden kaikki  määrätyt vuorot
+    @GetMapping("/everyone/all") // companyn kaikkien työntekijöiden kaikki  määrätyt vuorot
     public ResponseEntity<?> getAllAssignedShifts(@RequestHeader("Authorization") String token){
         try {
-            // varmenna token ja rooli
-            User supervisor = securityService.getUserFromToken(token);
-            if(!securityService.isSuperVisor(supervisor.getRole())){
+            // varmenna token, ei rajata roolilla
+            User user= securityService.getUserFromToken(token);
+           
+            // hae käyttäjän company
+            Company company = user.getCompany();
+            if (company == null){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
             }
-            // hae käyttäjän company
-            Long companyId = supervisor.getCompany().getId();
             // hae kaikki companyn määrätyt vuorot
-            List<Shift> assignedshifts = shiftService.getAllShiftsByCompanyId(companyId);
+            List<Shift> assignedshifts = shiftService.getAllShiftsByCompanyId(company.getId());
             List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
             for (Shift assignedshift : assignedshifts){
                 ShiftListDTO shiftListDTO = new ShiftListDTO();
@@ -239,6 +241,8 @@ public class ShiftRestController {
                 shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
                 shiftListDTO.setDescription(assignedshift.getDescription());
                 shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTO.setCompanyId(company.getId());
+                shiftListDTO.setCompanyName(company.getCompanyName());
                 shiftListDTOs.add(shiftListDTO);
             }
 
@@ -251,5 +255,84 @@ public class ShiftRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
         }
     }
-    
+
+    @GetMapping("/others") // companyn kaikkien työntekijöiden kaikki TULEVAT määrätyt vuorot, paitsi käyttäjän omat
+    public ResponseEntity<?> getOthersFutureAssignedShifts(@RequestHeader("Authorization") String token){
+        try {
+            // varmenna token, ei rajata roolilla
+            User user= securityService.getUserFromToken(token);
+           
+            // hae käyttäjän company
+            Company company = user.getCompany();
+            if (company == null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            }
+            // hae kaikki companyn määrätyt vuorot
+            List<Shift> assignedshifts = shiftService.getCompanyFutureShiftsExcludingUser(user);
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTO.setCompanyId(company.getId());
+                shiftListDTO.setCompanyName(company.getCompanyName());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
+        }
+        catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
+        }
+    }
+
+    @GetMapping("/others/all") // companyn kaikkien työntekijöiden kaikki määrätyt vuorot, paitsi käyttäjän omat
+    public ResponseEntity<?> getOthersAssignedShifts(@RequestHeader("Authorization") String token){
+        try {
+            // varmenna token, ei rajata roolilla
+            User user= securityService.getUserFromToken(token);
+           
+            // hae käyttäjän company
+            Company company = user.getCompany();
+            if (company == null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            }
+            // hae kaikki companyn määrätyt vuorot
+            List<Shift> assignedshifts = shiftService.getAllCompanyShiftsExcludingUserNoDate(user);
+            List<ShiftListDTO> shiftListDTOs = new ArrayList<>();
+            for (Shift assignedshift : assignedshifts){
+                ShiftListDTO shiftListDTO = new ShiftListDTO();
+                shiftListDTO.setId(assignedshift.getId());
+                shiftListDTO.setUserId(assignedshift.getUser().getId());
+                shiftListDTO.setFirstName(assignedshift.getUser().getFirstName());
+                shiftListDTO.setLastName(assignedshift.getUser().getLastName());
+                shiftListDTO.setStartTime(assignedshift.getStartTime());
+                shiftListDTO.setEndTime(assignedshift.getEndTime());
+                shiftListDTO.setBreaksTotal(assignedshift.getBreaksTotal());
+                shiftListDTO.setDescription(assignedshift.getDescription());
+                shiftListDTO.setDate(assignedshift.getDate());
+                shiftListDTO.setCompanyId(company.getId());
+                shiftListDTO.setCompanyName(company.getCompanyName());
+                shiftListDTOs.add(shiftListDTO);
+            }
+
+            return ResponseEntity.ok(shiftListDTOs);
+        }
+        catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
+        }
+    }
 }

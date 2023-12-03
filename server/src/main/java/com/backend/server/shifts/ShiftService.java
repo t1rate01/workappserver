@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import com.backend.server.companies.Company;
@@ -107,6 +108,17 @@ public class ShiftService {
         public void deleteOldShifts(int days){
                 LocalDate cutOff = LocalDate.now().minusDays(days);
                 shiftRepository.deleteOldShifts(cutOff);
+        }
+
+        @Transactional
+        public List<Shift> getCompanyFutureShiftsExcludingUser(User user){
+                LocalDate date = LocalDate.now();
+                return shiftRepository.findAllByUserExcludingUser(user.getId(), user.getCompany().getId(), date);
+        }
+
+        @Transactional
+        public List<Shift> getAllCompanyShiftsExcludingUserNoDate(User user){
+                return shiftRepository.findAllByUserExcludingUserNoDate(user.getId(), user.getCompany().getId());
         }
     
 }

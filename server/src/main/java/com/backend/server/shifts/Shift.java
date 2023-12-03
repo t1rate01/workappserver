@@ -34,7 +34,7 @@ public class Shift {
     @JoinColumn(name = "user_id", nullable=false, referencedColumnName = "id")  // KÄYTTÄJÄ JOLLE VUORO ON MÄÄRÄTTY
     private User user;
 
-    @Column(nullable=false, unique = true)
+    @Column(nullable=false)
     private LocalDate date;
 
     @Column(nullable=false)

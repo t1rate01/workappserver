@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByCompany(Company company);
 
+    // hae kaikki company id perusteella
+    List<User> findAllByCompanyId(Long id);
+
 } 

@@ -36,6 +36,13 @@ public interface ShiftRepository extends JpaRepository<Shift, Long>{
     @Query(value = "DELETE FROM shifts WHERE date < :date", nativeQuery = true)
     void deleteOldShifts(@Param("date") LocalDate date);
 
+    // hae kaikki companyn käyttäjien tulevat vuorot, paitsi omat
+    @Query("SELECT s FROM Shift s JOIN s.user u WHERE u.company.id = :companyId AND u.id != :userId AND s.date >= :date")
+    List<Shift> findAllByUserExcludingUser(@Param("userId") Long userId, @Param("companyId") Long companyId, @Param("date") LocalDate date);
+
+    // hae kaikki companyn käyttäjien menneet ja tulevat vuorot, paitsi omat
+    @Query("SELECT s FROM Shift s JOIN s.user u WHERE u.company.id = :companyId AND u.id != :userId")
+    List<Shift> findAllByUserExcludingUserNoDate(@Param("userId") Long userId, @Param("companyId") Long companyId);
     
 
     

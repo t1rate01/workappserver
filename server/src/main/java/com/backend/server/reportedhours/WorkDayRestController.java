@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.reportedhours.DTO.EveryOnesWorkDayDTO;
 import com.backend.server.reportedhours.DTO.PunchClockResponseDTO;
 import com.backend.server.reportedhours.DTO.PunchPostDTO;
 import com.backend.server.reportedhours.DTO.WorkDayDTO;
@@ -75,7 +76,7 @@ public class WorkDayRestController {
             // Käyttäjäntarkistus, heittää IllegalArgumentException jos ei toimi
             User user = securityService.getUserFromToken(token);
 
-            WorkDayResponseDTO workDay = workDayService.updateShift(token, workDayDTO.getDate(), 
+            WorkDayResponseDTO workDay = workDayService.updateShift(user, workDayDTO.getDate(), 
                                                          workDayDTO.getStartTime(), 
                                                          workDayDTO.getEndTime(), 
                                                          workDayDTO.getBreaksTotal(), 
@@ -301,6 +302,87 @@ public class WorkDayRestController {
             PunchClockResponseDTO DTO = new PunchClockResponseDTO();
             DTO.setEndTime(punchPostDTO.getTime());
             return ResponseEntity.ok(DTO.getEndTime());
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/company") // palauttaa kaikki yrityksen työntekijöiden vuorot, jos rooli riittää
+    public ResponseEntity<?> everyOnesHours(@RequestHeader ("Authorization") String token){
+        try {
+            // tarkista käyttäjä, palauttaa illegalargumentexceptionin jos ei toimi
+            User user = securityService.getUserFromToken(token);
+            //tarkista rooli (vähintään supervisor)
+            if(!securityService.isSuperVisor(user.getRole())){
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            // hae käyttäjän yritys
+            Long companyID = user.getCompany().getId();
+            // hae kaikki yrityksen vuorot 
+            List<WorkDay> companyShifts = workDayService.getCompanyWorkDays(companyID);
+
+            List<EveryOnesWorkDayDTO> companyShiftsDTO = companyShifts.stream()   // DTO välttääkseen lazy parsing error
+                            .map(workday -> {
+                            EveryOnesWorkDayDTO dto = new EveryOnesWorkDayDTO();
+                            dto.setId(workday.getId());
+                            dto.setFirstName(workday.getUser().getFirstName());
+                            dto.setLastName(workday.getUser().getLastName());
+                            dto.setDate(workday.getDate());
+                            dto.setStartTime(workday.getStartTime());
+                            dto.setEndTime(workday.getEndTime());
+                            dto.setBreaksTotal(workday.getBreaksTotal());
+                            dto.setDescription(workday.getDescription());
+                            dto.setIsHoliday(workday.getIsHoliday());
+                            return dto;
+        })
+                            .collect(Collectors.toList());
+
+            return ResponseEntity.ok(companyShiftsDTO);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/others") // palauttaa kaikki companyn vuorot, paitsi omat
+    public ResponseEntity<?> othersHours(@RequestHeader ("Authorization") String token){
+        try {
+            // käyttäjä ja rooli
+            User user = securityService.getUserFromToken(token);
+            if(!securityService.isSuperVisor(user.getRole())){
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+         
+            List<WorkDay> companyShifts = workDayService.getCompanyWorkDaysExcludingUser(user);
+        
+            
+
+            List<EveryOnesWorkDayDTO> othersShiftsDTO = companyShifts.stream()   // DTO välttääkseen lazy parsing error
+                            .map(workday -> {
+                            EveryOnesWorkDayDTO dto = new EveryOnesWorkDayDTO();
+                            dto.setId(workday.getId());
+                            dto.setFirstName(workday.getUser().getFirstName());
+                            dto.setLastName(workday.getUser().getLastName());
+                            dto.setDate(workday.getDate());
+                            dto.setStartTime(workday.getStartTime());
+                            dto.setEndTime(workday.getEndTime());
+                            dto.setBreaksTotal(workday.getBreaksTotal());
+                            dto.setDescription(workday.getDescription());
+                            dto.setIsHoliday(workday.getIsHoliday());
+                            return dto;
+        }
+                            )
+                            .collect(Collectors.toList());
+
+            return ResponseEntity.ok(othersShiftsDTO);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -42,6 +42,14 @@ public class WorkDayService {
         return workDayRepository.findAllByUserId(id);
     }
 
+    public List<WorkDay> getCompanyWorkDays(Long companyID) {
+        return workDayRepository.findAllByUserIn(companyID);
+    }
+
+    public List<WorkDay> getCompanyWorkDaysExcludingUser(User user) {
+        return workDayRepository.findAllByUserExcludingUser(user.getId(), user.getCompany().getId());
+    }
+
     @Transactional
     public WorkDay addShift(String token, LocalDate date, LocalTime startTime, 
                             LocalTime endTime, Integer breaksTotal, String description) {
@@ -98,18 +106,13 @@ public class WorkDayService {
     }
 
     @Transactional
-    public WorkDayResponseDTO updateShift(String token, LocalDate date, LocalTime startTime, 
+    public WorkDayResponseDTO updateShift(User user, LocalDate date, LocalTime startTime, 
                                LocalTime endTime, Integer breaksTotal, String description) {
                                 
         // tarkista onko päivä tulevaisuudessa
         if(date.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Can't fill future dates");
         } 
-
-        // käyttäjä tokenista
-        User user = securityService.getUserFromToken(token);
-      
- 
 
         // Tarkista onko päivälle jo olemassa entry
         Optional<WorkDay> existingWorkDay = workDayRepository.findByUserAndDate(user.getId(), date);
