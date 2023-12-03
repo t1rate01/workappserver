@@ -1,7 +1,9 @@
 package com.backend.server.companies;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.server.companies.DTO.NewMailDTO;
+import com.backend.server.companies.DTO.SettingsDTO;
 import com.backend.server.companies.DTO.UserListDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
@@ -135,6 +138,43 @@ public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token,
         approvedEmails.updateRole(approvedEmailID, role);
         securityService.updateRole(userId, role);
         return ResponseEntity.ok("Role updated");
+    }
+    catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+
+// Muokkaa companyn settingsejä
+@PutMapping("/settings")
+public ResponseEntity<?> updateCompanySettings(@RequestHeader("Authorization")String token, @RequestBody SettingsDTO settingsDTO){
+    try {
+        // käyttäjätarkistus ja roolitarkistus
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isMaster(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // hae käyttäjän company
+        Company company = user.getCompany();
+        // katso nykyiset asetukset
+        Map<String, Object> currentSettings = company.getSettings();
+        if (currentSettings == null){
+            currentSettings = new HashMap<>();
+        }
+        // päivitä asetukset
+        currentSettings.putAll(settingsDTO.getSettings());
+        company.setSettings(currentSettings);
+        // katso onko DTOssa companyName, jos on niin, tarkista onko se erilainen kuin nykyinen
+        if (settingsDTO.getCompanyName() != null && !settingsDTO.getCompanyName().equals(company.getCompanyName())){
+            // jos on, päivitä companylle uusi nimi
+            company.setCompanyName(settingsDTO.getCompanyName());
+        }
+        // tallenna company
+        companyService.updateCompany(company);
+
+        return ResponseEntity.ok("Settings updated");
     }
     catch (IllegalArgumentException e) {
         return ResponseEntity.status(401).body(e.getMessage());

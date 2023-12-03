@@ -23,6 +23,13 @@ public class CompanyService {
         return companyRepository.save(company);
     }
 
+    public Company updateCompany(Company company) {
+        Company existingCompany = companyRepository.findById(company.getId()).orElse(null);
+        existingCompany.setCompanyName(company.getCompanyName());
+        existingCompany.setSettings(company.getSettings());
+        return companyRepository.save(existingCompany);
+    }
+
     public Company getCompanyById(Long id) {
         return companyRepository.findById(id).orElse(null);
     }

@@ -251,6 +251,10 @@ public class SecurityService {
         }
     }
 
+    public void logout(User user){
+        expireAllTokens(user.getEmail());
+    }
+
   
 
     public Role checkRoleFromToken(String token){

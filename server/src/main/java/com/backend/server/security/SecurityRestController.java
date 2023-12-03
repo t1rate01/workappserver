@@ -101,6 +101,36 @@ public class SecurityRestController {
         }
     }
 
+    @PostMapping("/login/short")
+    public ResponseEntity<?> loginShort(@Valid @RequestHeader("Authorization") String basicAuth) {
+        try {
+            String basicStart = "Basic ";
+
+            if (!basicAuth.startsWith(basicStart)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing Basic Auth format");
+            }
+
+            String base64Credentials = basicAuth.substring(basicStart.length()).trim();
+            byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
+            String credentials = new String(credDecoded, StandardCharsets.UTF_8);
+            String[] values = credentials.split(":", 2);
+
+            if (values.length != 2) {
+                return ResponseEntity.badRequest().body("Error in Basic Auth format");
+            }
+
+            String email = values[0];
+            String password = values[1];
+
+            LoginResponse response = securityService.login(email, password);
+            response.setRefreshToken("");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // Kutsuttu functio käyttää throw new IllegalArgumentExceptionia, josta viesti
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/refresh")  // frontti koodattava reagoimaan accesstokenin vanhenemiseen niin että yrittää tähän endpointiin refreshtokenilla ja saada uuden tokenin
     public ResponseEntity<String> refresh(@Valid @RequestHeader("Authorization") String refreshToken) {
@@ -110,6 +140,18 @@ public class SecurityRestController {
         try {
             String newAccessToken = securityService.refreshAccessToken(refreshToken);
             return ResponseEntity.ok(newAccessToken);
+        } catch (IllegalArgumentException e) {
+            // Kutsuttu functio käyttää throw new IllegalArgumentExceptionia
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@Valid @RequestHeader("Authorization") String accessToken) {
+        try {
+            User user = securityService.getUserFromToken(accessToken);
+            securityService.logout(user);
+            return ResponseEntity.ok("Logged out successfully");
         } catch (IllegalArgumentException e) {
             // Kutsuttu functio käyttää throw new IllegalArgumentExceptionia
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
