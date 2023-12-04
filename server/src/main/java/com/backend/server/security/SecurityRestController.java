@@ -7,15 +7,20 @@ import java.util.Base64;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.companies.CompAppEmailsRepository;
+import com.backend.server.companies.CompanyAppEmailsService;
+import com.backend.server.companies.CompanyApprovedEmails;
 import com.backend.server.security.DTO.RegisterDTO;
 import com.backend.server.users.User;
-
+import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
 
 import jakarta.validation.Valid;
@@ -27,6 +32,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")  // kaikki alkaa /api + endpointin /osote
 public class SecurityRestController {
     private final SecurityService securityService;
+    private final UserRepository userRepository;
+    private final CompanyAppEmailsService approvedEmails;
+    private final CompAppEmailsRepository compAppEmailsRepository;
+  
 
 
 
@@ -44,11 +53,50 @@ public class SecurityRestController {
         return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
         // Jos tarvitsee debugata jotain muuta niin 500
-        // TODO: email rekisteröity jo
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
     }
 }
 
+    @PutMapping("/user/update") // käyttäjän omien tietojen päivitys, ei salasanan
+    public ResponseEntity<?> updateUser(@Valid @RequestBody RegisterDTO DTO, @RequestHeader("Authorization") String token) {
+        try{
+            // käyttäjä tokenista
+            User user = securityService.getUserFromToken(token);
+            Boolean isMaster = securityService.isMaster(user.getRole());
+
+            securityService.updateUserDetails(user, DTO, isMaster);
+            return ResponseEntity.ok("User updated successfully");
+        }
+        catch (IllegalArgumentException e) {
+            // Catch argumentexceptionille
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Jos tarvitsee debugata jotain muuta niin 500
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+    }
+
+    @PutMapping("/user/update/{userId}") // käyttäjän tietojen päivitys, ei salasanan, vain master ja vain muille
+    public ResponseEntity<?> updateOtherUser (@Valid @RequestBody RegisterDTO DTO, @RequestHeader("Authorization") String token, @PathVariable Long userId) {
+        try {
+            User master = securityService.getUserFromToken(token);
+            if (!securityService.isMaster(master.getRole())) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            User targetUser = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+            securityService.updateUserDetails(targetUser, DTO, true);
+            return ResponseEntity.ok("User updated successfully");
+        }
+        catch (IllegalArgumentException e) {
+            // Catch argumentexceptionille
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Jos tarvitsee debugata jotain muuta niin 500
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+    }
+
+    // TODO: poista admin setit
     @PostMapping("register/admin")
      public ResponseEntity<?> registerAdmin(@Valid @RequestBody String email, String password){
     try {

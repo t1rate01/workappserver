@@ -36,6 +36,7 @@ public class CompanyRestController {
     private final SecurityService securityService;
     private final UserRepository userRepository;
     private final CompanyAppEmailsService approvedEmails;
+    private final CompAppEmailsRepository compAppEmailsRepository;
     
 @GetMapping("/workers")
 public ResponseEntity<?> getCompanysWorkers(@RequestHeader("Authorization") String token) {
@@ -82,6 +83,17 @@ public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String to
         // hae käyttäjän company
         Company company = user.getCompany();
         // lisää sähköposti companyn hyväksyttyihin sähköposteihin
+
+        // tarkista ettei sähköpostia ole jo hyväksytty
+        if (compAppEmailsRepository.findByEmail(newMailDTO.getEmail()) != null){
+            return ResponseEntity.status(401).body("Email already approved");
+        }
+
+        // tarkista, ettei kohteen rooli ole korkeampi kuin käyttäjän rooli
+        if (newMailDTO.getRole().ordinal() > user.getRole().ordinal()){ // worker = 0, supervisor = 1, master = 2
+            return ResponseEntity.status(401).body("Cannot add higher role than your own");
+        }
+        
         approvedEmails.addEmail(company, newMailDTO.getEmail(), newMailDTO.getRole());
         return ResponseEntity.ok("Email added");
     }
@@ -120,6 +132,33 @@ public ResponseEntity<?> deleteWorkerByID(@RequestHeader("Authorization")String 
         return ResponseEntity.status(401).body(e.getMessage());
     }
 }
+
+@DeleteMapping("/workers/email/{email}")  // Poistaa työntekijän sähköpostin hyväksytyistä sähköposteista JA KATSOO ONKO SÄHKÖPOSTILLA KÄYTTÄJÄÄ, JOKA MYÖS POISTETAAN
+public ResponseEntity<?> deleteApprovedEmail(@RequestHeader("Authorization")String token, @PathVariable String email){
+    try {
+        // käyttäjätarkistus ja roolitarkistus, sallitaan vain masterille
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isMaster(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // katso onko sähköpostilla käyttäjää
+        User worker = userRepository.findByEmail(email).orElse(null);
+        if(worker != null){
+            // jos on, poista käyttäjä
+            userRepository.deleteById(worker.getId());
+        }
+        // poista sähköposti hyväksytyistä sähköposteista
+        approvedEmails.deleteCompanyApprovedEmailsByEmail(email);
+        return ResponseEntity.ok("Email deleted");
+    }
+    catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+
 
 @PutMapping("/workers/{userId}")
 public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token, @PathVariable Long userId, @RequestBody Role role){

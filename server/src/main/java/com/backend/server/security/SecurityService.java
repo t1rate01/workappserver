@@ -17,6 +17,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.backend.server.companies.CompAppEmailsRepository;
 import com.backend.server.companies.Company;
 import com.backend.server.companies.CompanyApprovedEmails;
+import com.backend.server.security.DTO.RegisterDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
@@ -135,6 +136,46 @@ public class SecurityService {
 
         return adminRepository.save(admin);
     }
+
+    @Transactional User updateUserDetails(User currentUser, RegisterDTO dto, Boolean requesterIsMaster){
+        User targetUser = currentUser;
+        if (dto.getEmail() != null && requesterIsMaster) {
+            // tarkista onko uusi sähköposti varattuna hyväksytyissä sähköposteissa
+            if (isEmailApproved(dto.getEmail())) {
+                throw new IllegalArgumentException("New email in use in approved emails");
+            }
+            // tarkista onko sähköposti varattu olemassaolevissa käyttäjissä
+            if(userRepository.findByEmail(dto.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("New email already in use");
+            }
+            targetUser.setEmail(dto.getEmail());
+            updateApprovedEmails(currentUser.getEmail(), dto.getEmail());
+        }
+        // katso onko rooli muuttunut ja tarkista onko muuttaja master
+        if (dto.getRole() != null && requesterIsMaster) {
+            targetUser.setRole(dto.getRole());
+        }
+        if (dto.getFirstName() != null) {
+            targetUser.setFirstName(dto.getFirstName());
+        }
+        if (dto.getLastName() != null) {
+            targetUser.setLastName(dto.getLastName());
+        }
+        if (dto.getPhoneNumber() != null) {
+            targetUser.setPhoneNumber(dto.getPhoneNumber());
+        }
+
+        return userRepository.save(targetUser);
+    }
+    
+    private void updateApprovedEmails(String oldEmail, String newEmail) {
+        CompanyApprovedEmails companyApprovedEmails = companyApprovedEmailsRepository.findByEmail(oldEmail).orElse(null);
+        if (companyApprovedEmails != null) {
+            companyApprovedEmails.setEmail(newEmail);
+            companyApprovedEmailsRepository.save(companyApprovedEmails);
+        }
+    }
+
 
     public LoginResponse login(String email, String password){
         // katso onko email admin 

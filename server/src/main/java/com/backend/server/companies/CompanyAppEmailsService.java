@@ -24,6 +24,10 @@ public class CompanyAppEmailsService {
     public void deleteCompanyApprovedEmails(Long id) {
         compAppEmailsRepository.deleteById(id);
     }
+
+    public void deleteCompanyApprovedEmailsByEmail(String email) {
+        compAppEmailsRepository.deleteByEmail(email);
+    }
     
     public List<CompanyApprovedEmails> getCompanyApprovedEmails() {
         return compAppEmailsRepository.findAll();

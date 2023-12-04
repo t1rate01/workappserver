@@ -12,5 +12,8 @@ public interface CompAppEmailsRepository extends JpaRepository<CompanyApprovedEm
     // hae sähköpostilla 
     Optional<CompanyApprovedEmails> findByEmail(String email);
 
+    // poista sähköpostilla
+    void deleteByEmail(String email);
+
   
 }
