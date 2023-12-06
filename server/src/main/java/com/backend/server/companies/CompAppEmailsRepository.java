@@ -1,5 +1,6 @@
 package com.backend.server.companies;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +16,7 @@ public interface CompAppEmailsRepository extends JpaRepository<CompanyApprovedEm
     // poista sähköpostilla
     void deleteByEmail(String email);
 
+    // hae companyllä
+    List<CompanyApprovedEmails> findByCompany(Company company);
   
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.server.companies.DTO.ApprovedEmailsDTO;
 import com.backend.server.companies.DTO.NewMailDTO;
 import com.backend.server.companies.DTO.SettingsDTO;
 import com.backend.server.companies.DTO.UserListDTO;
@@ -72,6 +74,53 @@ public ResponseEntity<?> getCompanysWorkers(@RequestHeader("Authorization") Stri
         }
 }
 
+// Yrityksen esihyväksytyt sähköpostit // TODO: TEST
+@GetMapping("/workers/email")
+public ResponseEntity<?> getApprovedEmails(@RequestHeader("Authorization") String token) {
+    try {
+        // käyttäjätarkistus ja roolitarkistus
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isSuperVisor(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // hae käyttäjän company
+        Company company = user.getCompany();
+        // hae companyyn kuuluvat työntekijät DTOlle
+        List<ApprovedEmailsDTO> emailsDTOs = approvedEmails.getApprovedEmailsDTO(company);
+        
+        return ResponseEntity.ok(emailsDTOs);
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+
+// hae yrityksen asetukset
+@GetMapping("/settings")
+public ResponseEntity<?> getCompanySettings(@RequestHeader("Authorization") String token) {
+    try {
+        // käyttäjätarkistus
+        User user = securityService.getUserFromToken(token);
+        
+        // hae käyttäjän company
+        Company company = user.getCompany();
+        // hae companyyn kuuluvat työntekijät DTOlle
+        Map<String, Object> settings = company.getSettings();
+        if (settings == null){
+            settings = new HashMap<>();
+        }
+        return ResponseEntity.ok(settings);
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+    
+
 @PostMapping("/workers/add")
 public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String token, @RequestBody NewMailDTO newMailDTO){
     try {
@@ -85,7 +134,7 @@ public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String to
         // lisää sähköposti companyn hyväksyttyihin sähköposteihin
 
         // tarkista ettei sähköpostia ole jo hyväksytty
-        if (compAppEmailsRepository.findByEmail(newMailDTO.getEmail()) != null){
+        if (compAppEmailsRepository.findByEmail(newMailDTO.getEmail()).isPresent()){
             return ResponseEntity.status(401).body("Email already approved");
         }
 
@@ -107,7 +156,7 @@ public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String to
 }
 
 @DeleteMapping("/workers/{userId}")
-public ResponseEntity<?> deleteWorkerByID(@RequestHeader("Authorization")String token, @PathVariable int userId){
+public ResponseEntity<?> deleteWorkerByID(@RequestHeader("Authorization")String token, @PathVariable Long userId){
     try {
         // käyttäjätarkistus ja roolitarkistus
         User user = securityService.getUserFromToken(token);
@@ -159,14 +208,22 @@ public ResponseEntity<?> deleteApprovedEmail(@RequestHeader("Authorization")Stri
     }
 }
 
-
+// Päivitä työntekijän rooli, supervisor ja master
 @PutMapping("/workers/{userId}")
-public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token, @PathVariable Long userId, @RequestBody Role role){
+public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token, @PathVariable Long userId, @RequestBody NewMailDTO DTO){
     try {
+          // katso että DTO:ssa on rooli
+        if (DTO.getRole() == null){
+            return ResponseEntity.status(401).body("Role not found, send role in JSON format");
+        }
         // käyttäjätarkistus ja roolitarkistus
         User user = securityService.getUserFromToken(token);
-        if(!securityService.isMaster(user.getRole())){
+        if(!securityService.isSuperVisor(user.getRole())){
             return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // jos roolia päivitetään, katso että uusi rooli ei ole korkeampi kuin lisääjän rooli
+        if (DTO.getRole().ordinal() > user.getRole().ordinal()){ // worker = 0, supervisor = 1, master = 2
+            return ResponseEntity.status(401).body("Cannot add higher role than your own");
         }
         // hae käyttäjän jonka id annettu email, päivitä käyttäjän ja preapprovedin rooli
         User worker = userRepository.findById(userId).orElse(null);
@@ -174,8 +231,8 @@ public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token,
             return ResponseEntity.status(404).body("User not found");
         }
         Long approvedEmailID = approvedEmails.getCompanyApprovedEmailsById(worker.getId()).getId();
-        approvedEmails.updateRole(approvedEmailID, role);
-        securityService.updateRole(userId, role);
+        approvedEmails.updateRole(approvedEmailID, DTO.getRole());
+        securityService.updateRole(userId, DTO.getRole());
         return ResponseEntity.ok("Role updated");
     }
     catch (IllegalArgumentException e) {
@@ -186,7 +243,59 @@ public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token,
     }
 }
 
-// Muokkaa companyn settingsejä
+// Muokkaa esihyväksyttyä sähköpostia, supervisor ja master. Vain jos sähköpostilla ei ole vielä rekisteröity
+@PutMapping("/workers/email/{oldEmail}")
+public ResponseEntity<?> updateApprovedEmail(@RequestHeader("Authorization") String token, @PathVariable String oldEmail, @RequestBody NewMailDTO DTO){
+    try {
+        // katso että DTO:ssa on email
+        if (DTO.getEmail() == null){
+            return ResponseEntity.status(401).body("Email not found, send email in JSON format");
+        }
+        // käyttäjätarkistus ja roolitarkistus
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isSuperVisor(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // jos roolia päivitetään, katso että uusi rooli ei ole korkeampi kuin lisääjän rooli
+        if (DTO.getRole() != null && DTO.getRole().ordinal() > user.getRole().ordinal()){ // worker = 0, supervisor = 1, master = 2
+            return ResponseEntity.status(401).body("Cannot add higher role than your own");
+        }
+        // katso että oldEmail on olemassa
+        Optional<CompanyApprovedEmails> oldEmailOptional = compAppEmailsRepository.findByEmail(oldEmail);
+        if (!oldEmailOptional.isPresent()){
+            return ResponseEntity.status(404).body("Email not found");
+        }
+        // katso että uusi email ei ole jo rekisteröity
+        Optional<CompanyApprovedEmails> newEmailOptional = compAppEmailsRepository.findByEmail(DTO.getEmail());
+        if (newEmailOptional.isPresent()){
+            return ResponseEntity.status(401).body("User has already registered with email, edit through user settings.");
+        }
+        // katso että uusi email on vapaa
+        Optional<CompanyApprovedEmails> newEmailOptional2 = compAppEmailsRepository.findByEmail(DTO.getEmail());
+        if (newEmailOptional2.isPresent()){
+            return ResponseEntity.status(401).body("Email already in approved list");
+        }
+        // päivitä email
+        CompanyApprovedEmails oldEmailObject = oldEmailOptional.get();
+        oldEmailObject.setEmail(DTO.getEmail());
+        // päivitä rooli, jos DTO:ssa on rooli
+        if (DTO.getRole() != null){
+            oldEmailObject.setRole(DTO.getRole());
+        }
+        // tallenna
+        compAppEmailsRepository.save(oldEmailObject);
+        return ResponseEntity.ok("Email updated");
+        
+    }
+    catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+
+// Muokkaa companyn settingsejä, vain master
 @PutMapping("/settings")
 public ResponseEntity<?> updateCompanySettings(@RequestHeader("Authorization")String token, @RequestBody SettingsDTO settingsDTO){
     try {
