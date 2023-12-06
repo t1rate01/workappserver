@@ -18,6 +18,7 @@ import com.backend.server.companies.CompAppEmailsRepository;
 import com.backend.server.companies.Company;
 import com.backend.server.companies.CompanyApprovedEmails;
 import com.backend.server.security.DTO.RegisterDTO;
+import com.backend.server.security.DTO.UpdateDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
@@ -137,7 +138,7 @@ public class SecurityService {
         return adminRepository.save(admin);
     }
 
-    @Transactional User updateUserDetails(User currentUser, RegisterDTO dto, Boolean requesterIsMaster){
+    @Transactional User updateUserDetails(User currentUser, UpdateDTO dto, Boolean requesterIsMaster, Boolean updatingSelf){
         User targetUser = currentUser;
         if (dto.getEmail() != null && requesterIsMaster) {
             // tarkista onko uusi sähköposti varattuna hyväksytyissä sähköposteissa
@@ -151,10 +152,11 @@ public class SecurityService {
             targetUser.setEmail(dto.getEmail());
             updateApprovedEmails(currentUser.getEmail(), dto.getEmail());
         }
-        // katso onko rooli muuttunut ja tarkista onko muuttaja master
-        if (dto.getRole() != null && requesterIsMaster) {
+        // katso onko rooli muuttunut ja tarkista onko muuttaja master, ja tarkista ettet muuta omaa rooliasi
+        if (dto.getRole() != null && requesterIsMaster && !updatingSelf) {
             targetUser.setRole(dto.getRole());
         }
+
         if (dto.getFirstName() != null) {
             targetUser.setFirstName(dto.getFirstName());
         }

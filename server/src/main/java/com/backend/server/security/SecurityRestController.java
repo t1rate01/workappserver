@@ -3,7 +3,7 @@ package com.backend.server.security;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-
+import org.hibernate.sql.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,6 +19,7 @@ import com.backend.server.companies.CompAppEmailsRepository;
 import com.backend.server.companies.CompanyAppEmailsService;
 import com.backend.server.companies.CompanyApprovedEmails;
 import com.backend.server.security.DTO.RegisterDTO;
+import com.backend.server.security.DTO.UpdateDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
@@ -33,8 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityRestController {
     private final SecurityService securityService;
     private final UserRepository userRepository;
-    private final CompanyAppEmailsService approvedEmails;
-    private final CompAppEmailsRepository compAppEmailsRepository;
+ 
   
 
 
@@ -58,13 +58,14 @@ public class SecurityRestController {
 }
 
     @PutMapping("/user/update") // käyttäjän omien tietojen päivitys, ei salasanan
-    public ResponseEntity<?> updateUser(@Valid @RequestBody RegisterDTO DTO, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> updateUser(@Valid @RequestBody UpdateDTO DTO, @RequestHeader("Authorization") String token) {
         try{
             // käyttäjä tokenista
             User user = securityService.getUserFromToken(token);
             Boolean isMaster = securityService.isMaster(user.getRole());
+            
 
-            securityService.updateUserDetails(user, DTO, isMaster);
+            securityService.updateUserDetails(user, DTO, isMaster, true);
             return ResponseEntity.ok("User updated successfully");
         }
         catch (IllegalArgumentException e) {
@@ -77,14 +78,17 @@ public class SecurityRestController {
     }
 
     @PutMapping("/user/update/{userId}") // käyttäjän tietojen päivitys, ei salasanan, vain master ja vain muille
-    public ResponseEntity<?> updateOtherUser (@Valid @RequestBody RegisterDTO DTO, @RequestHeader("Authorization") String token, @PathVariable Long userId) {
+    public ResponseEntity<?> updateOtherUser (@Valid @RequestBody UpdateDTO DTO, @RequestHeader("Authorization") String token, @PathVariable Long userId) {
         try {
             User master = securityService.getUserFromToken(token);
+            Boolean personalUpdate = master.getId() == userId;
             if (!securityService.isMaster(master.getRole())) {
                 return ResponseEntity.status(401).body("Unauthorized");
             }
             User targetUser = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-            securityService.updateUserDetails(targetUser, DTO, true);
+            
+            
+            securityService.updateUserDetails(targetUser, DTO, true, personalUpdate);
             return ResponseEntity.ok("User updated successfully");
         }
         catch (IllegalArgumentException e) {
