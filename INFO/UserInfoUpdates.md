@@ -15,7 +15,7 @@ Muokattavissa olevat kentät on:
 ```
   
 Vastaus 200 OK Updated successfully.  
-
+  
 ### Toisen käyttäjän tietojen muokkaus (vain master) - /api/user/update/{userId}  
   
 Method: Put  
