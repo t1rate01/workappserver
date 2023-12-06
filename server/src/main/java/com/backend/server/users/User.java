@@ -3,11 +3,13 @@ package com.backend.server.users;
 import java.util.Set;
 
 import com.backend.server.companies.Company;
+import com.backend.server.reportedhours.WorkDay;
 import com.backend.server.security.RefreshToken;
 import com.backend.server.shifts.Shift;
 import com.backend.server.utility.Auditable;
 import com.backend.server.utility.Role;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,10 +61,17 @@ public class User extends Auditable {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<RefreshToken> refreshTokens;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<Shift> shifts;
 
- // TODO: SUHTEET SHIFTS JA TYÖAIKARAPORTIT
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<WorkDay> workDays;
+
+
+
+ 
     
 }

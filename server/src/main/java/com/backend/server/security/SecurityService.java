@@ -149,8 +149,9 @@ public class SecurityService {
             if(userRepository.findByEmail(dto.getEmail()).isPresent()) {
                 throw new IllegalArgumentException("New email already in use");
             }
+            updateApprovedEmails(targetUser.getEmail(), dto.getEmail());
             targetUser.setEmail(dto.getEmail());
-            updateApprovedEmails(currentUser.getEmail(), dto.getEmail());
+            
         }
         // katso onko rooli muuttunut ja tarkista onko muuttaja master, ja tarkista ettet muuta omaa rooliasi
         if (dto.getRole() != null && requesterIsMaster && !updatingSelf) {
@@ -171,10 +172,11 @@ public class SecurityService {
     }
     
     private void updateApprovedEmails(String oldEmail, String newEmail) {
-        CompanyApprovedEmails companyApprovedEmails = companyApprovedEmailsRepository.findByEmail(oldEmail).orElse(null);
-        if (companyApprovedEmails != null) {
-            companyApprovedEmails.setEmail(newEmail);
-            companyApprovedEmailsRepository.save(companyApprovedEmails);
+        Optional<CompanyApprovedEmails> oldApprovedEmail = companyApprovedEmailsRepository.findByEmail(oldEmail);
+        if (oldApprovedEmail.isPresent()) {
+            CompanyApprovedEmails approvedEmail = oldApprovedEmail.get();
+            approvedEmail.setEmail(newEmail);
+            companyApprovedEmailsRepository.save(approvedEmail);
         }
     }
 
