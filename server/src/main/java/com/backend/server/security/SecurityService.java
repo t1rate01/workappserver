@@ -180,6 +180,40 @@ public class SecurityService {
         }
     }
 
+    @Transactional
+    public void deleteUserAndApprovedEmail(User targetUser, CompanyApprovedEmails approvedEmail) {
+        userRepository.delete(targetUser);
+        companyApprovedEmailsRepository.delete(approvedEmail);
+        String errorMessage = ""; // tarkista onnistuiko poisto, jos ei, heitä virhe
+        if (userRepository.findByEmail(targetUser.getEmail()).isPresent()) {
+            errorMessage = "User deletion failed.";
+        } else if (companyApprovedEmailsRepository.findByEmail(approvedEmail.getEmail()).isPresent()) {
+            errorMessage += " Approved email deletion failed";
+        } else {
+            errorMessage = null;
+        }
+        if (errorMessage != null) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    @Transactional
+    public void deleteApprovedEmail(CompanyApprovedEmails approvedEmail) {
+        companyApprovedEmailsRepository.delete(approvedEmail);
+        // jos poisto epäonnistui, heitä virhe
+        if (companyApprovedEmailsRepository.findByEmail(approvedEmail.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Approved email deletion failed");
+        }
+    }
+
+    @Transactional
+    public void updateUserRole(User targetUser, Role role, CompanyApprovedEmails approvedEmail) {
+        targetUser.setRole(role);
+        userRepository.save(targetUser);
+        approvedEmail.setRole(role);
+        companyApprovedEmailsRepository.save(approvedEmail);
+    }
+
 
     public LoginResponse login(String email, String password){
         // katso onko email admin 

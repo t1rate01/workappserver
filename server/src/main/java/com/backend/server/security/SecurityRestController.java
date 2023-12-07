@@ -86,7 +86,10 @@ public class SecurityRestController {
                 return ResponseEntity.status(401).body("Unauthorized");
             }
             User targetUser = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-            
+            // katso että companyt samat
+            if (targetUser.getCompany().getId() != master.getCompany().getId()) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
             
             securityService.updateUserDetails(targetUser, DTO, true, personalUpdate);
             return ResponseEntity.ok("User updated successfully");

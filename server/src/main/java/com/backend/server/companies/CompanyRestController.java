@@ -142,6 +142,8 @@ public ResponseEntity<?> addWorkerEmail(@RequestHeader("Authorization")String to
         if (newMailDTO.getRole().ordinal() > user.getRole().ordinal()){ // worker = 0, supervisor = 1, master = 2
             return ResponseEntity.status(401).body("Cannot add higher role than your own");
         }
+
+        
         
         approvedEmails.addEmail(company, newMailDTO.getEmail(), newMailDTO.getRole());
         return ResponseEntity.ok("Email added");
@@ -163,16 +165,28 @@ public ResponseEntity<?> deleteWorkerByID(@RequestHeader("Authorization")String 
         if(!securityService.isMaster(user.getRole())){
             return ResponseEntity.status(401).body("Unauthorized");
         }
-        // hae käyttäjän jonka id annettu email, ja poista käyttäjä ja preapproved email
-        User worker = userRepository.findById((long)userId).orElse(null);
-        if(worker == null){
+        // hae käyttäjän jonka id annettu email, ja poista käyttäjä ja preapproved email, käytetään optionalia
+        Optional<User> workerOptional = userRepository.findById(userId);
+        if (!workerOptional.isPresent()){
             return ResponseEntity.status(404).body("User not found");
         }
+        User targetUser = workerOptional.get();
 
-        Long approvedEmailID = approvedEmails.getCompanyApprovedEmailsById(worker.getId()).getId();
-        approvedEmails.deleteCompanyApprovedEmails(approvedEmailID);
-        userRepository.deleteById(worker.getId());
-        return ResponseEntity.ok("User deleted");
+        Optional<CompanyApprovedEmails> approvedEmailOptional = compAppEmailsRepository.findByEmail(targetUser.getEmail());
+        if (!approvedEmailOptional.isPresent()){
+            return ResponseEntity.status(404).body("Email not found in preapproved emails");
+        }
+        CompanyApprovedEmails approvedEmail = approvedEmailOptional.get();
+        // tarkista companyt
+        if (!targetUser.getCompany().getId().equals(approvedEmail.getCompany().getId())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        if(!targetUser.getCompany().getId().equals(user.getCompany().getId())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // poista käyttäjä
+        securityService.deleteUserAndApprovedEmail(targetUser, approvedEmail);
+        return ResponseEntity.ok("User and preapproved email deleted");
     }
     catch (IllegalArgumentException e) {
         return ResponseEntity.status(401).body(e.getMessage());
@@ -184,21 +198,48 @@ public ResponseEntity<?> deleteWorkerByID(@RequestHeader("Authorization")String 
 
 @DeleteMapping("/workers/email/{email}")  // Poistaa työntekijän sähköpostin hyväksytyistä sähköposteista JA KATSOO ONKO SÄHKÖPOSTILLA KÄYTTÄJÄÄ, JOKA MYÖS POISTETAAN
 public ResponseEntity<?> deleteApprovedEmail(@RequestHeader("Authorization")String token, @PathVariable String email){
+    
     try {
+        String response = "";
+        User userToDelete = null;
         // käyttäjätarkistus ja roolitarkistus, sallitaan vain masterille
         User user = securityService.getUserFromToken(token);
         if(!securityService.isMaster(user.getRole())){
             return ResponseEntity.status(401).body("Unauthorized");
         }
         // katso onko sähköpostilla käyttäjää
-        User worker = userRepository.findByEmail(email).orElse(null);
-        if(worker != null){
-            // jos on, poista käyttäjä
-            userRepository.deleteById(worker.getId());
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()){
+            // jos on, merkitse käyttäjä poistoon
+            userToDelete = userOptional.get();
+            response += "User deleted, ";
+        }
+
+        // hae poistettavan sähköpostin tiedot
+        Optional<CompanyApprovedEmails> approvedEmail = compAppEmailsRepository.findByEmail(email);
+        if (!approvedEmail.isPresent()){
+            return ResponseEntity.status(404).body("Email not found in preapproved emails");
+        }
+        CompanyApprovedEmails verifiedEmail = approvedEmail.get();
+
+        // katso että tekijän company on sama kuin poistettavan sähköpostin company
+        if (!user.getCompany().getId().equals(verifiedEmail.getCompany().getId())){
+            return ResponseEntity.status(401).body("Unauthorized");
         }
         // poista sähköposti hyväksytyistä sähköposteista
-        approvedEmails.deleteCompanyApprovedEmailsByEmail(email);
-        return ResponseEntity.ok("Email deleted");
+        if(userToDelete != null){
+            // tarkista että companyt on samat
+            if (!userToDelete.getCompany().getId().equals(user.getCompany().getId())){
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            securityService.deleteUserAndApprovedEmail(userToDelete, verifiedEmail);
+        }
+        else{
+            securityService.deleteApprovedEmail(verifiedEmail);
+        }
+        // lisää maininta sähköpostin poistosta responseen
+        response += "Preapproved Email deleted";
+        return ResponseEntity.ok(response);
     }
     catch (IllegalArgumentException e) {
         return ResponseEntity.status(401).body(e.getMessage());
@@ -221,18 +262,34 @@ public ResponseEntity<?> updateRole(@RequestHeader("Authorization")String token,
         if(!securityService.isSuperVisor(user.getRole())){
             return ResponseEntity.status(401).body("Unauthorized");
         }
+
+        
         // jos roolia päivitetään, katso että uusi rooli ei ole korkeampi kuin lisääjän rooli
         if (DTO.getRole().ordinal() > user.getRole().ordinal()){ // worker = 0, supervisor = 1, master = 2
             return ResponseEntity.status(401).body("Cannot add higher role than your own");
         }
         // hae käyttäjän jonka id annettu email, päivitä käyttäjän ja preapprovedin rooli
-        User worker = userRepository.findById(userId).orElse(null);
-        if(worker == null){
+        Optional<User> workerOptional = userRepository.findById(userId);
+        if (!workerOptional.isPresent()){
             return ResponseEntity.status(404).body("User not found");
         }
-        Long approvedEmailID = approvedEmails.getCompanyApprovedEmailsById(worker.getId()).getId();
-        approvedEmails.updateRole(approvedEmailID, DTO.getRole());
-        securityService.updateRole(userId, DTO.getRole());
+        User targetWorker = workerOptional.get();
+
+        // katso että kohteen ja muokkaajan company on sama
+        if (!targetWorker.getCompany().getId().equals(user.getCompany().getId())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        Optional<CompanyApprovedEmails> approvedEmailOptional = compAppEmailsRepository.findByEmail(targetWorker.getEmail());
+        if (!approvedEmailOptional.isPresent()){
+            return ResponseEntity.status(404).body("Email not found in preapproved emails");
+        }
+        CompanyApprovedEmails approvedEmail = approvedEmailOptional.get();
+
+       // approvedEmails.updateRole(approvedEmail.getId(), DTO.getRole());
+       // securityService.updateRole(userId, DTO.getRole());
+        securityService.updateUserRole(targetWorker, DTO.getRole(), approvedEmail);
+        
         return ResponseEntity.ok("Role updated");
     }
     catch (IllegalArgumentException e) {
@@ -275,6 +332,10 @@ public ResponseEntity<?> updateApprovedEmail(@RequestHeader("Authorization") Str
         if (newEmailOptional2.isPresent()){
             return ResponseEntity.status(401).body("Email already in approved list");
         }
+        // katso että companyt on samat
+        if (!oldEmailOptional.get().getCompany().getId().equals(user.getCompany().getId())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
         // päivitä email
         CompanyApprovedEmails oldEmailObject = oldEmailOptional.get();
         oldEmailObject.setEmail(DTO.getEmail());
@@ -306,6 +367,7 @@ public ResponseEntity<?> updateCompanySettings(@RequestHeader("Authorization")St
         }
         // hae käyttäjän company
         Company company = user.getCompany();
+
         // katso nykyiset asetukset
         Map<String, Object> currentSettings = company.getSettings();
         if (currentSettings == null){
