@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +28,12 @@ import lombok.Setter;
 public class ImageUploadService {  
      // Käytetään custom backgroundin tallentamiseen. Kuvat tallennetaan bucketeerin kautta, ja kuvan url tallennetaan companyn settingseihin
      // ohjeet saatu tutorialista.
-        private final AmazonS3 s3client;
+        private AmazonS3 s3client;
+
+        @Autowired
+        public ImageUploadService(AmazonS3 s3client) {
+            this.s3client = s3client;
+        }
         
         @Value("${aws.bucket-name}")
         private String bucketName;

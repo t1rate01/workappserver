@@ -23,16 +23,24 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class DataBaseCleaner {
 
     @Value("${keepWorkShiftsFor}")
-    private int keepWorkShiftsFor;
+    private String keepWorkShiftsForString;
+
+    private int keepWorkShiftsFor = keepWorkShiftsForString != null ? Integer.parseInt(keepWorkShiftsForString) : 0;
 
     @Value("${keepWorkDaysFor}")
-    private int keepWorkDaysFor;
+    private String keepWorkDaysForString;
+
+    private int keepWorkDaysFor = keepWorkDaysForString != null ? Integer.parseInt(keepWorkDaysForString) : 0;
 
     @Value("${workShiftKeepMax}")
-    private int workShiftKeepMax;
+    private String workShiftKeepMaxString;
+
+    private int workShiftKeepMax = workShiftKeepMaxString != null ? Integer.parseInt(workShiftKeepMaxString) : 0;
 
     @Value("${workDayKeepMax}")
-    private int workDayKeepMax;
+    private String workDayKeepMaxString;
+
+    private int workDayKeepMax = workDayKeepMaxString != null ? Integer.parseInt(workDayKeepMaxString) : 0;
 
     private final ShiftService shiftService;
     private final WorkDayService workDayService;
