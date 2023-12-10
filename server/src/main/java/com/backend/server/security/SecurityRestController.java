@@ -2,8 +2,9 @@ package com.backend.server.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
-import org.hibernate.sql.Update;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,11 +16,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.server.companies.CompAppEmailsRepository;
-import com.backend.server.companies.CompanyAppEmailsService;
-import com.backend.server.companies.CompanyApprovedEmails;
+
 import com.backend.server.security.DTO.RegisterDTO;
 import com.backend.server.security.DTO.UpdateDTO;
+import com.backend.server.security.DTO.UpdatePassWordDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 import com.backend.server.utility.LoginResponse;
@@ -53,7 +53,7 @@ public class SecurityRestController {
         return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
         // Jos tarvitsee debugata jotain muuta niin 500
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
 
@@ -103,28 +103,48 @@ public class SecurityRestController {
     }
     }
 
-    // TODO: poista admin setit
-    @PostMapping("register/admin")
-     public ResponseEntity<?> registerAdmin(@Valid @RequestBody String email, String password){
-    try {
-
-        Admin registeredAdmin = securityService.registerAdmin(email, password);
-        //User registeredUser = securityService.register(registerDTO.getEmail(), registerDTO.getPassword(), registerDTO.getFirstName(), registerDTO.getLastName(), registerDTO.getPhoneNumber());
-        if (registeredAdmin != null) {
-            return ResponseEntity.ok("User created successfully");
-        } else {
-            return ResponseEntity.badRequest().body("User creation failed");
+    @PutMapping("/user/update/password") // käyttäjän oman salasanan päivitys. 
+    public ResponseEntity<?> updatePassword(@Valid @RequestBody UpdatePassWordDTO DTO, @RequestHeader("Authorization") String token) {
+        try {
+            User user = securityService.getUserFromToken(token);
+            securityService.updatePassword(user, DTO.getNewPassword());
+             return ResponseEntity.ok("Password updated successfully");
         }
-    } catch (IllegalArgumentException e) {
-        // Catch argumentexceptionille
-        return ResponseEntity.badRequest().body(e.getMessage());
-    } catch (Exception e) {
-        // Jos tarvitsee debugata jotain muuta niin 500
-        // TODO: email rekisteröity jo
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        catch (IllegalArgumentException e) {
+            // Catch argumentexceptionille
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Jos tarvitsee debugata jotain muuta niin 500
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
-}
+    }
 
+    @PutMapping("/user/update/password/{userId}") // käyttäjän salasanan päivitys, vain master
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody UpdatePassWordDTO DTO, @RequestHeader("Authorization") String token, @PathVariable Long userId) {
+        try {
+            User master = securityService.getUserFromToken(token);
+            if (!securityService.isMaster(master.getRole())) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            Optional<User> targetUser = userRepository.findById(userId);
+            if (targetUser.isEmpty()) {
+                return ResponseEntity.status(401).body("Target user not found");
+            }
+            // katso että companyt samat
+            if (targetUser.get().getCompany().getId() != master.getCompany().getId()) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            securityService.updatePassword(targetUser.get(), DTO.getNewPassword());
+            return ResponseEntity.ok("Targets password updated successfully");
+        }
+        catch (IllegalArgumentException e) {
+            // Catch argumentexceptionille
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Jos tarvitsee debugata jotain muuta niin 500
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+    }
 
 
     @PostMapping("/login")

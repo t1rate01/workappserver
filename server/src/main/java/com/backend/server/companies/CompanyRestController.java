@@ -25,7 +25,7 @@ import com.backend.server.companies.DTO.UserListDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
-import com.backend.server.utility.Role;
+
 
 import lombok.RequiredArgsConstructor;
 

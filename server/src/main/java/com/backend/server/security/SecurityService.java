@@ -2,7 +2,7 @@ package com.backend.server.security;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.backend.server.companies.CompAppEmailsRepository;
 import com.backend.server.companies.Company;
 import com.backend.server.companies.CompanyApprovedEmails;
-import com.backend.server.security.DTO.RegisterDTO;
+
 import com.backend.server.security.DTO.UpdateDTO;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
@@ -35,7 +35,6 @@ public class SecurityService {
     private final UserRepository userRepository;
     // private final CompanyRepository companyRepository;   // tarviikohan?
     private final CompAppEmailsRepository companyApprovedEmailsRepository;
-    private final AdminRepository adminRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final Encoder encoder;
 
@@ -106,37 +105,6 @@ public class SecurityService {
         return userRepository.save(user); 
     }
 
-    @Transactional
-    public Admin registerAdmin(String email, String password){
-        if(email == null || password == null) {
-            throw new IllegalArgumentException("All fields must be filled");
-        }
-
-        // katso onko jo admin, sallitaan vain yksi
-        List<Admin> admins = adminRepository.findAll();
-        if(admins.size() > 0) {
-            throw new IllegalArgumentException("Admin already exists");
-        }
-
-
-        // tarkista onko sähköposti sallitulla listalla
-        if(!isEmailApproved(email)){
-            throw new IllegalArgumentException("Email is not on any approved list");
-        }
-
-        // tarkista jos käyttäjällä on jo tili
-        if(userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Email already in use");
-        }
-
-        String encodedPassword = encoder.encode(password);
-
-        Admin admin = new Admin();
-        admin.setEmail(email);
-        admin.setPassword(encodedPassword);
-
-        return adminRepository.save(admin);
-    }
 
     @Transactional User updateUserDetails(User currentUser, UpdateDTO dto, Boolean requesterIsMaster, Boolean updatingSelf){
         User targetUser = currentUser;
@@ -171,6 +139,7 @@ public class SecurityService {
         return userRepository.save(targetUser);
     }
     
+    @Transactional
     private void updateApprovedEmails(String oldEmail, String newEmail) {
         Optional<CompanyApprovedEmails> oldApprovedEmail = companyApprovedEmailsRepository.findByEmail(oldEmail);
         if (oldApprovedEmail.isPresent()) {
@@ -214,23 +183,17 @@ public class SecurityService {
         companyApprovedEmailsRepository.save(approvedEmail);
     }
 
+    @Transactional
+    public void updatePassword(User targetUser, String newPassword) {
+        String encodedPassword = encoder.encode(newPassword);
+        targetUser.setPassword(encodedPassword);
+        expireAllTokens(targetUser.getEmail());
+        userRepository.save(targetUser);
+    }
+
 
     public LoginResponse login(String email, String password){
-        // katso onko email admin 
-        if(adminRepository.findByEmail(email).isPresent()) {
-            Admin admin = adminRepository.findByEmail(email).get();
-            if(encoder.matches(password, admin.getPassword())) {
-                String token = createAccessToken(admin.getEmail(), Role.MASTER);
-                LoginResponse response = new LoginResponse();
-                response.setToken(token);
-                return response;
-            }
-            else {
-                throw new IllegalArgumentException("Wrong password");
-            }
-        }
 
-        // OIKEA LOGIN
     Optional<User> userOptional = userRepository.findByEmail(email);
 
         if(userOptional.isPresent()) {

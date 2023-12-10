@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.backend.server.users.User;
+
 
 
 @Repository
@@ -27,9 +27,9 @@ public interface WorkDayRepository extends JpaRepository<WorkDay, Long> {
     @Query(value = "SELECT * FROM reported_hours WHERE user_id = :userId AND date = :date ORDER BY date DESC LIMIT 1", nativeQuery = true)
     Optional<WorkDay> findByUserAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
-    // poista vanhentuneet shiftit cutoff päivän jälkeen
-    @Query(value = "DELETE FROM reported_hours WHERE date < :date", nativeQuery = true)
-    void deleteOldShifts(@Param("date") LocalDate date);
+    // poista vanhentuneet workdayt cutoff päivän jälkeen, companyn perusteella, nativequeryllä
+    @Query(value = "DELETE FROM reported_hours WHERE date < :date AND user_id IN (SELECT id FROM users WHERE company_id = :companyId)", nativeQuery = true)
+    void deleteOldReports(@Param("date") LocalDate date, @Param("companyId") Long companyId);
 
     // hae kaikki companyn käyttäjien raportoidut vuorot
     @Query("SELECT wd FROM WorkDay wd JOIN wd.user u WHERE u.company.id = :companyId")

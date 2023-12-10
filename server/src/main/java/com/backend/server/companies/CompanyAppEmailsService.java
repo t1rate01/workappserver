@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.backend.server.companies.DTO.ApprovedEmailsDTO;
-import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
 import com.backend.server.utility.Role;

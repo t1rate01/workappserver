@@ -1,17 +1,3 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Login</title>
-</head>
-<body>
-    <h1>Login</h1>
-    <form action="#" th:action="@{/api/group9/login}" method="post">
-        <input type="text" name="email" placeholder="Username" required/>
-        <input type="password" name="password" placeholder="Password" required/>
-        <button type="submit">Login</button>
-    </form>
-  
-<div th:if="${error}" th:text="${error}"></div>
 
-</body>
 </html>

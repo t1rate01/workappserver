@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import com.backend.server.companies.Company;
@@ -105,9 +104,9 @@ public class ShiftService {
         }
 
         @Transactional
-        public void deleteOldShifts(int days){
+        public void deleteOldShifts(int days, Company company){
                 LocalDate cutOff = LocalDate.now().minusDays(days);
-                shiftRepository.deleteOldShifts(cutOff);
+                shiftRepository.deleteOldShifts(cutOff, company.getId());
         }
 
         @Transactional

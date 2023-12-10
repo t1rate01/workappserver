@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.server.companies.Company;
 import com.backend.server.reportedhours.DTO.WorkDayResponseDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
@@ -134,7 +135,6 @@ public class WorkDayService {
 
         // pyhäpäivä tarkistus
         Boolean isHoliday = holidayChecker.isHoliday(date);
-        // TODO: fix pyhäpäivä tarkistus
         //Boolean isHoliday = false;
 
         // conversio date -> localdate
@@ -178,9 +178,9 @@ public class WorkDayService {
     }
 
     @Transactional
-    public void deleteOldWorkDays(int days){
+    public void deleteOldWorkDays(int days, Company company){
         LocalDate cutOff = LocalDate.now().minusDays(days);
-        workDayRepository.deleteOldShifts(cutOff);
+        workDayRepository.deleteOldReports(cutOff, company.getId());
     }
 
     

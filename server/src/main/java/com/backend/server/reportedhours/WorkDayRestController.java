@@ -333,7 +333,7 @@ public class WorkDayRestController {
             User confirmedUser = user.get();
             // päätä päivän vuoro ja päivitä siihen lopetusajaksi annettu aika
             WorkDay workDay = workDayService.punchOut(confirmedUser, punchPostDTO.getTime());
-
+            
             PunchClockResponseDTO DTO = new PunchClockResponseDTO();
             DTO.setEndTime(punchPostDTO.getTime());
             return ResponseEntity.ok(DTO.getEndTime());

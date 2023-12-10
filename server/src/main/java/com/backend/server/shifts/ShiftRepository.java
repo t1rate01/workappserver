@@ -32,9 +32,9 @@ public interface ShiftRepository extends JpaRepository<Shift, Long>{
     @Query(value = "SELECT * FROM shifts WHERE user_id = :userId AND date >= :date AND user_id IN (SELECT id FROM users WHERE company_id = :companyId) ORDER BY date ASC", nativeQuery = true)
     List<Shift> findFutureShiftsByUserId(@Param("userId") Long userId, @Param("date") LocalDate date, @Param("companyId") Long companyId);
 
-    // poista vanhentuneet shiftit cutoff päivän jälkeen
-    @Query(value = "DELETE FROM shifts WHERE date < :date", nativeQuery = true)
-    void deleteOldShifts(@Param("date") LocalDate date);
+    // poista vanhentuneet shiftit cutoff päivän jälkeen, companyId perusteella, nativequeryllä
+    @Query(value = "DELETE FROM shifts WHERE date < :date AND user_id IN (SELECT id FROM users WHERE company_id = :companyId)", nativeQuery = true)
+    void deleteOldShifts(@Param("date") LocalDate date, @Param("companyId") Long companyId);
 
     // hae kaikki companyn käyttäjien tulevat vuorot, paitsi omat
     @Query("SELECT s FROM Shift s JOIN s.user u WHERE u.company.id = :companyId AND u.id != :userId AND s.date >= :date")
