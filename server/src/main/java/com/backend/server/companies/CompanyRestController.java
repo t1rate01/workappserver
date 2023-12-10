@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.server.companies.DTO.ApprovedEmailsDTO;
 import com.backend.server.companies.DTO.NewMailDTO;
@@ -25,7 +27,7 @@ import com.backend.server.companies.DTO.UserListDTO;
 import com.backend.server.security.SecurityService;
 import com.backend.server.users.User;
 import com.backend.server.users.UserRepository;
-
+import com.backend.server.utility.ImageUploadService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +41,7 @@ public class CompanyRestController {
     private final UserRepository userRepository;
     private final CompanyAppEmailsService approvedEmails;
     private final CompAppEmailsRepository compAppEmailsRepository;
+    private final ImageUploadService imageUploadService;
     
 @GetMapping("/workers")
 public ResponseEntity<?> getCompanysWorkers(@RequestHeader("Authorization") String token) {
@@ -394,4 +397,34 @@ public ResponseEntity<?> updateCompanySettings(@RequestHeader("Authorization")St
     }
 }
 
+@PostMapping("/backgroundimg")
+public ResponseEntity<?> uploadBackgroundImage(@RequestHeader("Authorization") String token, @RequestParam("image") MultipartFile image){
+    try {
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isMaster(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // hae käyttäjän company
+        Company company = user.getCompany();
+        // tallenna kuva
+        String imageURL = imageUploadService.uploadImage(image);
+        // hae nykyiset asetukset
+        Map<String, Object> currentSettings = company.getSettings();
+        if (currentSettings == null){
+            currentSettings = new HashMap<>();
+        }
+        // päivitä asetukset
+        currentSettings.put("backgroundImageURL", imageURL);
+        company.setSettings(currentSettings);
+        // tallenna company
+        companyService.updateCompany(company);
+        return ResponseEntity.ok("Image uploaded");
+}
+    catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
 }
