@@ -50,7 +50,7 @@ public class ImageUploadService {
 
         
         public String uploadImage(MultipartFile imageFile, Long companyID) throws IOException {
-            String fileName = generateFileName(imageFile.getOriginalFilename(), companyID);
+            String fileName = "public/" + generateFileName(imageFile.getOriginalFilename(), companyID);
             // tarkista onko companylla jo kuva, jos on niin poista
             deleteExistingFileForCompany(companyID, false);
 
@@ -81,7 +81,7 @@ public class ImageUploadService {
         }
 
         private void deleteExistingFileForCompany(Long companyId, Boolean publicCall) {   // public call niin kutsu tulee esim deletemappingistä, jonne hyvä kertoa jos mitään ei löydy
-        String companyPrefix = companyId + "_";
+        String companyPrefix = "public/"+ companyId + "_";
 
         // Listaa kaikki tiedostot bucketista, katso tiedostojen alut, jos alkaa companyID:llä, poista
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
