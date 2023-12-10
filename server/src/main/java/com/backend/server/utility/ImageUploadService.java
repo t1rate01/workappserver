@@ -56,9 +56,8 @@ public class ImageUploadService {
 
             File file = convertMultiPartToFile(imageFile);
 
-            // Uusi request objecti, permissions public read
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileName, file)
-                    .withCannedAcl(CannedAccessControlList.PublicRead);
+            // Uusi request objecti, acl ei toimi, public osio toimii
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileName, file);
 
             // upload
             s3client.putObject(putObjectRequest);
