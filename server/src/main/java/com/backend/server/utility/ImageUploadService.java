@@ -11,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
 import com.amazonaws.services.s3.AmazonS3;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,13 +41,20 @@ public class ImageUploadService {
         @Value("${aws.bucket-name}")
         private String bucketName;
 
+        
         public String uploadImage(MultipartFile imageFile) throws IOException {
             String fileName = generateFileName(imageFile.getOriginalFilename());
             File file = convertMultiPartToFile(imageFile);
-            s3client.putObject(bucketName, fileName, file);
+
+            // Uusi request objecti, permissions public read
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileName, file)
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
+
+            // upload
+            s3client.putObject(putObjectRequest);
             file.delete();
 
-            return s3client.getUrl(bucketName, fileName).toExternalForm();  // form jotta url pysyy varmasti urlistringinä
+            return s3client.getUrl(bucketName, fileName).toExternalForm();
         }
 
         private File convertMultiPartToFile(MultipartFile file)  throws IOException {
