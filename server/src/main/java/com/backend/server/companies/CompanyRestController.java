@@ -407,7 +407,7 @@ public ResponseEntity<?> uploadBackgroundImage(@RequestHeader("Authorization") S
         // hae käyttäjän company
         Company company = user.getCompany();
         // tallenna kuva
-        String imageURL = imageUploadService.uploadImage(image);
+        String imageURL = imageUploadService.uploadImage(image, company.getId());
         // hae nykyiset asetukset
         Map<String, Object> currentSettings = company.getSettings();
         if (currentSettings == null){
@@ -421,6 +421,41 @@ public ResponseEntity<?> uploadBackgroundImage(@RequestHeader("Authorization") S
         return ResponseEntity.ok("Image uploaded");
 }
     catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (Exception e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+}
+
+@DeleteMapping("/backgroundimg")
+public ResponseEntity<?> deleteBackgroundImage(@RequestHeader("Authorization")String token){   // poistaa tallennetun urlin, ja companyid perusteella poistaa bucketista kuvan
+    try {
+        User user = securityService.getUserFromToken(token);
+        if(!securityService.isMaster(user.getRole())){
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // hae käyttäjän company
+        Company company = user.getCompany();
+        // hae nykyiset asetukset
+        Map<String, Object> currentSettings = company.getSettings();
+        if (currentSettings == null){
+            currentSettings = new HashMap<>();
+        }
+        // poista url
+        currentSettings.remove("backgroundImageURL");
+        company.setSettings(currentSettings);
+
+        // poista kuva bucketista
+        imageUploadService.deleteImage(company.getId());
+        // tallenna company
+        companyService.updateCompany(company);
+        return ResponseEntity.ok("Image deleted");
+    }
+    catch (IllegalArgumentException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
+    catch (RuntimeException e){
         return ResponseEntity.status(401).body(e.getMessage());
     }
     catch (Exception e) {
