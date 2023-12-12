@@ -208,6 +208,8 @@ public class SecurityService {
                 response.setRefreshToken(refreshToken);
                 response.setCompanyname(user.getCompany().getCompanyName());
                 response.setCompanySettings(user.getCompany().getSettings());
+                response.setFirstName(user.getFirstName());
+                response.setLastName(user.getLastName());
                 return response;
             }
             else {

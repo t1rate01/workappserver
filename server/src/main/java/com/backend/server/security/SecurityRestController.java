@@ -221,6 +221,8 @@ public class SecurityRestController {
             response.setRole(user.getRole());
             response.setCompanyname(user.getCompany().getCompanyName());
             response.setCompanySettings(user.getCompany().getSettings());
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
 
             // lähetä json
             return ResponseEntity.ok(response);
