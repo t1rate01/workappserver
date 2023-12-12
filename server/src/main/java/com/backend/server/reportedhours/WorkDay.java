@@ -30,7 +30,7 @@ public class WorkDay {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable=false, referencedColumnName = "id")
     private User user;
 

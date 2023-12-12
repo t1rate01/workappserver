@@ -31,7 +31,7 @@ public class Shift {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable=false, referencedColumnName = "id")  // KÄYTTÄJÄ JOLLE VUORO ON MÄÄRÄTTY
     private User user;
 

@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -232,8 +233,8 @@ public class SecurityRestController {
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@Valid @RequestHeader("Authorization") String accessToken) {
+    @DeleteMapping("/logout")
+    public ResponseEntity<?> logout(@Valid @RequestHeader("Authorization") String accessToken) {
         try {
             User user = securityService.getUserFromToken(accessToken);
             securityService.logout(user);
@@ -241,6 +242,10 @@ public class SecurityRestController {
         } catch (IllegalArgumentException e) {
             // Kutsuttu functio käyttää throw new IllegalArgumentExceptionia
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+        catch (Exception e) {
+            // Jos tarvitsee debugata jotain muuta niin 500
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

@@ -2,10 +2,11 @@ package com.backend.server.security;
 
 import java.time.Instant;
 import java.util.Date;
-
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties.Lettuce.Cluster.Refresh;
 import org.springframework.stereotype.Service;
 
 // import com.backend.server.companies.CompanyRepository;
@@ -283,20 +284,35 @@ public class SecurityService {
     }
     
     
-    public String expireAllTokens(String email){
+    public void expireAllTokens(String email){
         Optional<User> userOptional = userRepository.findByEmail(email);
         if(userOptional.isPresent()) {
             User user = userOptional.get();
-            refreshTokenRepository.deleteByUser(user);
-            return "Logged out";
+            // katso onko käyttäjällä refreshtokenia
+            if(refreshTokenRepository.findByUser(user).isPresent()){
+                // poista kaikki käyttäjän refreshtokenit
+                refreshTokenRepository.deleteRefreshTokenByUser(user);
+                
+            }
+            else{
+                throw new IllegalArgumentException("User has no refresh tokens");
+            }
+            refreshTokenRepository.deleteRefreshTokenByUser(user);
         }
         else {
             throw new IllegalArgumentException("User not found");
         }
     }
 
-    public void logout(User user){
-        expireAllTokens(user.getEmail());
+    public void logout(User user){  // tarkista onko userilla refreshtoken, jos on, poista kaikki
+       // listaa kaikki käyttäjän refreshtokenit
+       Optional<List<RefreshToken>> userTokens = refreshTokenRepository.findAllByUser(user);
+         if(userTokens.isPresent()){
+             for(RefreshToken token : userTokens.get()){
+                    refreshTokenRepository.delete(token);
+             }
+            }
+        // jos ei löydy, älä tee mitään
     }
 
   
