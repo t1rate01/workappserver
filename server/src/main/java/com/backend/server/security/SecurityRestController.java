@@ -208,13 +208,22 @@ public class SecurityRestController {
 
 
     @PostMapping("/refresh")  // frontti koodattava reagoimaan accesstokenin vanhenemiseen niin että yrittää tähän endpointiin refreshtokenilla ja saada uuden tokenin
-    public ResponseEntity<String> refresh(@Valid @RequestHeader("Authorization") String refreshToken) {
+    public ResponseEntity<?> refresh(@Valid @RequestHeader("Authorization") String refreshToken) {
         if (refreshToken.startsWith("Bearer ")) {  // poistetaan Bearer alku tokenhakuja varten
             refreshToken = refreshToken.substring(7);
         }
         try {
             String newAccessToken = securityService.refreshAccessToken(refreshToken);
-            return ResponseEntity.ok(newAccessToken);
+            User user = securityService.getUserFromToken(newAccessToken);
+            // muodosta vastaus JSON
+            LoginResponse response = new LoginResponse();
+            response.setToken(newAccessToken);
+            response.setRole(user.getRole());
+            response.setCompanyname(user.getCompany().getCompanyName());
+            response.setCompanySettings(user.getCompany().getSettings());
+
+            // lähetä json
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             // Kutsuttu functio käyttää throw new IllegalArgumentExceptionia
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
