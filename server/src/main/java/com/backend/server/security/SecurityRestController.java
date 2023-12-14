@@ -67,7 +67,13 @@ public class SecurityRestController {
             
 
             securityService.updateUserDetails(user, DTO, isMaster, true);
-            return ResponseEntity.ok("User updated successfully");
+            UpdateDTO updatedUserInfoDTO = new UpdateDTO();
+            updatedUserInfoDTO.setEmail(user.getEmail());
+            updatedUserInfoDTO.setFirstName(user.getFirstName());
+            updatedUserInfoDTO.setLastName(user.getLastName());
+            updatedUserInfoDTO.setPhoneNumber(user.getPhoneNumber());
+            updatedUserInfoDTO.setRole(user.getRole());
+            return ResponseEntity.ok(updatedUserInfoDTO);
         }
         catch (IllegalArgumentException e) {
             // Catch argumentexceptionille
@@ -93,7 +99,14 @@ public class SecurityRestController {
             }
             
             securityService.updateUserDetails(targetUser, DTO, true, personalUpdate);
-            return ResponseEntity.ok("User updated successfully");
+            UpdateDTO updatedUserInfoDTO = new UpdateDTO();
+            updatedUserInfoDTO.setEmail(targetUser.getEmail());
+            updatedUserInfoDTO.setFirstName(targetUser.getFirstName());
+            updatedUserInfoDTO.setLastName(targetUser.getLastName());
+            updatedUserInfoDTO.setPhoneNumber(targetUser.getPhoneNumber());
+            updatedUserInfoDTO.setRole(targetUser.getRole());
+            return ResponseEntity.ok(updatedUserInfoDTO);
+
         }
         catch (IllegalArgumentException e) {
             // Catch argumentexceptionille
