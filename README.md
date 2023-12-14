@@ -1,43 +1,45 @@
 # workappserver
  Backend for workhours app
-
-
-
-Toteutuksia ja mietteitä:  
-
-Loginissa saadaan 2 tokenia, 1 lyhyt ja 1 pitkäkestonen, lyhytkestosella pääsee toimintoihin.  
-Pitkäkestonen tallennetaan laitteelle ja tietokantaan, ja jos frontilla epäonnistuu login lyhyellä  
-tokenilla (on vanhentunut), frontti saa 401 vastauksen, jolloin frontin täytyy yrittää refreshata  
-token lähettämällä pitkäkestonen token, jonka servu autentikoi ja onnistuessa lähettää uuden tokenin. 
-Vaihtoehtoisesti frontin vois apin avatessa aina laittaa refresh token.   
-Ei tarvitse laittaa kirjautumaan uudestaan eikä tarvitse pitää pitkäikäistä accesstokenia.  
-Tähän jäi miettimättä isommin että mitä jos "Stay logged in" oliskin vaihtoehto...
   
-Kolme roolitasoa users: WORKER, SUPERVISOR, MASTER.  
-Tarkoitus että Worker näkee ja editoi vain omat tietonsa.  
-Supervisor voi antaa vuoroja ja nähdä muiden tietoja.  
-Master em. lisäksi lisätä approved emails.  
-Login palauttaa LoginResponse olion, jossa mukana role. Role perusteella frontin täytyy  
-valita menunäkymä ja mitä tietoja hakee. Role on myös enkoodattu tokeniin, niin väärää tietoa ei tule.  
+# Työvuorojen määräämiseen ja työvuoroista raportointiin kehitetyn sovelluksen backend.  
   
-ApprovedEmails listaan verrataan kun yritetään rekisteröityä (tapahtuu email ja salasana).  
-Listalta löytyessä kytketään työntekijä sitten sillä tiedolla suoraan oikeaan companyyn.  
-Emailit aina uniikkeja ja toimii käyttäjänimen sijasta, ei erillistä käyttäjänimeä.  
+## Käytetyt teknologiat:  
+Tietokanta: PostqreSQL.  
+Ohjelmointikieli: Java (Spring Boot).  
 
-Alla suunnitelmaa, huutomerkillä merkatut on tekemättä tai isosti kesken.  
-Käytetty Lombok-kirjastoa kontstruktoreiden, getterien ja setterien generointiin  
-jotta koodi pysyy luettavampana.  
+## Toimintalogiikka:  
+Yritys lisätään tietokantaan, ja yrityksen omistaja/esimies lisätään esihyväksyttyjen sähköpostien listalle tietokantaan.  
+Esihyväksytyllä listalla olevalla sähköpostilla pystyy rekisteröitymään. Rekisteröinnin yhteydessä käyttäjä liitetään  
+esihyväksytyn sähköpostin kautta saatuun yritykseen, ja samasta hänelle määräytyy rooli. (Worker,Supervisor,Master)  
+Rekisteröinnin jälkeen omistaja pystyy lisäämään esihyväksytylle listalle työntekijänsä/jäsenensä, ja heidät kaikki  
+sidotaan automaattisesti hänen yritykseen/organisaatioon.  
   
+Kaikille käyttäjille voidaan määrätä työvuoroja, ja kaikki voivat raportoida tehtyjä työvuoroja. Näitä säilytetään  
+määriteltävissä olevan ajan tietokannassa. Roolien perusteella määräytyy, ketkä voivat muokata mitäkin tietoja  
+muilta tai itseltään.  
+  
+## Ominaisuuksia:  
+Serverillä on tietokannansiivoaja, joka ajetaan joka yö ja joka poistaa automaattisesti kaikki vanhentuneet tiedot.  
+  
+Serverillä on pyhäpäiväntarkistaja, joka toistaiseksi kovakoodattujen pyhäpäivien ja sunnuntain perusteella merkitsee  
+raportoituihin vuoroihin pyhäpäiväbooleanin.  
+  
+Yrityksen Master tason käyttäjällä on mahdollisuus tallentaa yrityksensä käyttäjille näkyvän taustakuvan.  
+  
+Sisäänkirjautumisessa voi käyttää joko lyhyen ajan kirjautumista, jolloin saa vain normaalin accesstokenin.  
+Remember me-tilassa kirjautuessaan saa myös refreshTokenin, jota käyttäessään sovellus saa uuden accesstokenin.  
+Refreshtokenilla on ennaltamäärätty voimassaoloaika.  
+  
+Serveri kertoo sisäänkirjautumisen ja päivityksien yhteydessä frontille käyttäjän roolin, mutta rooli on myös koodattu  
+tokeniin yhdessä käyttäjätunnuksen kanssa. Endpointit ja servicemethodit valvovat tarvittaessa, että käyttäjällä on oikeus  
+endpointiin.  
+  
+Jokainen endpoint, jonne lähetetään tietoa tai jolta saadaan tietoa, lähettää ja vastaanottaa JSON muotoista tietoa.  
+Tässä hyödynnetään Data Transfer Objecteja (DTO).  
+  
+Frontinkehitystä varten yrityksen (company) tietokantatable sisältää muiden kolumnien lisäksi myös JSON muotoista dataa  
+vastaanottavan "companySettings" kolumnin, johon voi vapaassa muodossa lisätä/poistaa/päivittää dataa jota frontti hyödyntää.  
+Tähän tallennetaan esimerkiksi custom taustakuvan s3 url, josta frontti saa sen ladattua.  
 
-Database ~~MySQL~~ PostGreSQL, logiikka:  
-Company, jossa onetomany suhde Users ja CompanyApprovedEmails  
-Users, jolla manytoone suhde Company, ja TODO merkattu shifts ja työaikaraportit  
-Shifts, joilla manytoone suhde Users. TODO  
-ReportedHours, joilla manytoone suhde Users. TODO  
-
-RestControllereissa huomioitava että securityn funktiot ei palauta NULL epäonnistuessa,  
-vaan IllegalArgumentException. Restissä täytyy käyttää "catch IllegalArgumentException e"  
-kun pitää saada kiinni loginin epäonnistumisesta.    
-
-
-
+  
+Serveri pitää tarkkaan huolen siitä, että eri yrityksien tiedot eivät missään tapauksessa kulkeudu ristiin.  
