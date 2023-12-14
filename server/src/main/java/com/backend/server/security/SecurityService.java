@@ -288,11 +288,14 @@ public class SecurityService {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if(userOptional.isPresent()) {
             User user = userOptional.get();
-            // katso onko käyttäjällä refreshtokenia
-            if(refreshTokenRepository.findByUser(user).isPresent()){
-                // poista kaikki käyttäjän refreshtokenit
-                refreshTokenRepository.deleteRefreshTokenByUser(user);
-                
+           // listaa kaikki käyttäjän refresh tokenit
+            Optional<List<RefreshToken>> userTokens = refreshTokenRepository.findAllByUser(user);
+            // jos löytyy, poista jokainen
+            if(userTokens.isPresent()){
+                for(RefreshToken token : userTokens.get()){
+                    // poista token
+                    refreshTokenRepository.delete(token);
+                }
             }
             else{
                 throw new IllegalArgumentException("User has no refresh tokens");
