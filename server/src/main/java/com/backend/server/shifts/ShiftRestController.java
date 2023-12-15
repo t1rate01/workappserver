@@ -78,7 +78,7 @@ public class ShiftRestController {
     }
 
     @DeleteMapping("/delete/{shiftID}")
-    public ResponseEntity<?> deleteAssignedShift(@RequestHeader("Authorization") String token, @PathVariable int shiftId){
+    public ResponseEntity<?> deleteAssignedShift(@RequestHeader("Authorization") String token, @PathVariable Long shiftID){
         try {
             // varmenna token ja rooli
             User supervisor = securityService.getUserFromToken(token);
@@ -86,7 +86,7 @@ public class ShiftRestController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
             }
             // poista vuoro
-            String response = shiftService.deleteShift((long)shiftId);
+            String response = shiftService.deleteShift(shiftID);
             return ResponseEntity.ok(response);
         }
         catch(IllegalArgumentException e){
