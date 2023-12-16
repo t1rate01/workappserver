@@ -43,7 +43,7 @@ public class CompanyRestController {
     private final CompAppEmailsRepository compAppEmailsRepository;
     private final ImageUploadService imageUploadService;
     
-@GetMapping("/workers")
+@GetMapping("/workers")  // kaikki yrityksen työntekijät
 public ResponseEntity<?> getCompanysWorkers(@RequestHeader("Authorization") String token) {
         try {
             // käyttäjätarkistus ja roolitarkistus
