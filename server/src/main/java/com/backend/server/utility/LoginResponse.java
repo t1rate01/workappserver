@@ -14,10 +14,11 @@ import lombok.Setter;
 public class LoginResponse {
     private String token;
     private String refreshToken;
+    private String email;
+    private String phoneNumber;
     private String firstName;
     private String lastName;
     private Role role;
     private String companyname;
     private Map<String, Object> companySettings;
-
 }

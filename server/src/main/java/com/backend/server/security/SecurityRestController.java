@@ -105,6 +105,7 @@ public class SecurityRestController {
             updatedUserInfoDTO.setLastName(targetUser.getLastName());
             updatedUserInfoDTO.setPhoneNumber(targetUser.getPhoneNumber());
             updatedUserInfoDTO.setRole(targetUser.getRole());
+
             return ResponseEntity.ok(updatedUserInfoDTO);
 
         }
@@ -237,6 +238,8 @@ public class SecurityRestController {
             response.setCompanySettings(user.getCompany().getSettings());
             response.setFirstName(user.getFirstName());
             response.setLastName(user.getLastName());
+            response.setEmail(user.getEmail());
+            response.setPhoneNumber(user.getPhoneNumber());
 
             // lähetä json
             return ResponseEntity.ok(response);

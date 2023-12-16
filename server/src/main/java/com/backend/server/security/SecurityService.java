@@ -211,6 +211,8 @@ public class SecurityService {
                 response.setCompanySettings(user.getCompany().getSettings());
                 response.setFirstName(user.getFirstName());
                 response.setLastName(user.getLastName());
+                response.setEmail(user.getEmail());
+                response.setPhoneNumber(user.getPhoneNumber());
                 return response;
             }
             else {

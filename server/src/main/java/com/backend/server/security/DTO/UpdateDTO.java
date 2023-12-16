@@ -16,8 +16,6 @@ public class UpdateDTO {
 
     @Email(message="Must be a valid email")
     private String email;
-
-
     // nämä ei ole pakollisia
     private String firstName;
     private String lastName;
