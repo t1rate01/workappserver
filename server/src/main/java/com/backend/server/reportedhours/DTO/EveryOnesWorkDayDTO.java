@@ -14,6 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class EveryOnesWorkDayDTO {
     private Long id;
+    private Long userId;
     private String firstName;
     private String lastName;
     private String email;

@@ -361,6 +361,7 @@ public class WorkDayRestController {
                             .map(workday -> {
                             EveryOnesWorkDayDTO dto = new EveryOnesWorkDayDTO();
                             dto.setId(workday.getId());
+                            dto.setUserId(workday.getUser().getId());
                             dto.setFirstName(workday.getUser().getFirstName());
                             dto.setLastName(workday.getUser().getLastName());
                             dto.setDate(workday.getDate());
