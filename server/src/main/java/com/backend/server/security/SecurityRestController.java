@@ -232,6 +232,7 @@ public class SecurityRestController {
             User user = securityService.getUserFromToken(newAccessToken);
             // muodosta vastaus JSON
             LoginResponse response = new LoginResponse();
+            response.setUserId(user.getId());
             response.setToken(newAccessToken);
             response.setRole(user.getRole());
             response.setCompanyname(user.getCompany().getCompanyName());

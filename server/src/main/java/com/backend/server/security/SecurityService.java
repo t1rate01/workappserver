@@ -204,6 +204,7 @@ public class SecurityService {
                 String refreshToken = createRefreshToken(user.getEmail(), user.getRole());
                 saveRefreshToken(user, refreshToken);  // refresh token tietokantaan
                 LoginResponse response = new LoginResponse();
+                response.setUserId(user.getId());
                 response.setToken(token);
                 response.setRole(user.getRole());
                 response.setRefreshToken(refreshToken);
