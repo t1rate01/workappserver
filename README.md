@@ -1,5 +1,6 @@
 # workappserver
  Backend for workhours app
+ # BY: TERO RANTANEN (ME)
   
 # Työvuorojen määräämiseen ja työvuoroista raportointiin kehitetyn sovelluksen backend.  
   
